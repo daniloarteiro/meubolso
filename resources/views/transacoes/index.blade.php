@@ -60,9 +60,9 @@
                 <tbody>
                     @forelse ($transacoes as $l)
                         <tr>
-                            <td>{{ $l->data->format('d/m/Y') }}</td>
+                            <td>{{ \Carbon\Carbon::parse($l->data)->format('d/m/Y') }}</td>
                             <td>{{ $l->descricao }}</td>
-                            <td>{{ $l->categoria->nome }}</td>
+                            <td>{{ $l->categoria_nome }}</td>
                             <td class="text-end {{ $l->tipo }}">
                                 {{ $l->tipo == 'receita' ? '+' : '−' }} R$ {{ number_format($l->valor, 2, ',', '.') }}
                             </td>
@@ -72,15 +72,15 @@
                                     class="btn btn-sm btn-outline-secondary btn-editar"
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalEditar"
-                                    data-url="{{ route('transacoes.update', $l) }}"
+                                    data-url="{{ route('transacoes.update', $l->id) }}"
                                     data-tipo="{{ $l->tipo }}"
                                     data-descricao="{{ $l->descricao }}"
                                     data-valor="{{ $l->valor }}"
-                                    data-data="{{ $l->data->format('Y-m-d') }}"
+                                    data-data="{{ \Carbon\Carbon::parse($l->data)->format('Y-m-d') }}"
                                     data-categoria="{{ $l->categoria_id }}"
                                 >Editar</button>
 
-                                <form method="POST" action="{{ route('transacoes.destroy', $l) }}" class="d-inline" onsubmit="return confirm('Deseja excluir esta transação?')">
+                                <form method="POST" action="{{ route('transacoes.destroy', $l->id) }}" class="d-inline" onsubmit="return confirm('Deseja excluir esta transação?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>

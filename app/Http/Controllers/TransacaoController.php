@@ -4,27 +4,61 @@ namespace App\Http\Controllers;
 
 use App\Models\Transacao;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TransacaoController extends Controller
 {
     public function index(Request $request)
     {
         $user = $request->user();
+        $filtros = ['t.user_id = ?'];
+        $params = [$user->id];
 
-        $transacoes = $user->transacoes()
-            ->with('categoria')
-            ->when($request->filled('de'), fn ($q) => $q->whereDate('data', '>=', $request->de))
-            ->when($request->filled('ate'), fn ($q) => $q->whereDate('data', '<=', $request->ate))
-            ->when($request->filled('tipo'), fn ($q) => $q->whereHas('categoria', fn ($c) => $c->where('tipo', $request->tipo)))
-            ->when($request->filled('categoria_id'), fn ($q) => $q->where('categoria_id', $request->categoria_id))
-            ->orderByDesc('data')
-            ->orderByDesc('id')
-            ->get();
+        if ($request->filled('de')) {
+            $filtros[] = 'DATE(t.data) >= ?';
+            $params[] = $request->input('de');
+        }
 
-        $categorias = $user->categorias()
-            ->orderBy('tipo')
-            ->orderBy('nome')
-            ->get();
+        if ($request->filled('ate')) {
+            $filtros[] = 'DATE(t.data) <= ?';
+            $params[] = $request->input('ate');
+        }
+
+        if ($request->filled('tipo')) {
+            $filtros[] = 'c.tipo = ?';
+            $params[] = $request->input('tipo');
+        }
+
+        if ($request->filled('categoria_id')) {
+            $filtros[] = 't.categoria_id = ?';
+            $params[] = ctype_digit((string) $request->input('categoria_id'))
+                ? (int) $request->input('categoria_id')
+                : 0;
+        }
+
+        $where = implode(' AND ', $filtros);
+
+        $transacoes = DB::select("
+            SELECT
+                t.id,
+                t.categoria_id,
+                t.descricao,
+                t.valor,
+                t.data,
+                c.nome AS categoria_nome,
+                c.tipo
+            FROM transacoes t
+            INNER JOIN categorias c ON c.id = t.categoria_id
+            WHERE {$where}
+            ORDER BY t.data DESC, t.id DESC
+        ", $params);
+
+        $categorias = DB::select("
+            SELECT id, nome, tipo, cor
+            FROM categorias
+            WHERE user_id = ?
+            ORDER BY tipo ASC, nome ASC
+        ", [$user->id]);
 
         return view('transacoes.index', compact('transacoes', 'categorias'));
     }

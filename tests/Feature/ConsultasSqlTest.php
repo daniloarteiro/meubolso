@@ -179,4 +179,112 @@ class ConsultasSqlTest extends TestCase
         $pdf = $this->actingAs($user)->get(route('relatorios.pdf', ['mes' => $mes]));
         $pdf->assertOk();
     }
+
+    public function test_transacoes_index_filtra_por_periodo_tipo_categoria_e_isola_usuarios(): void
+    {
+        $user = User::factory()->create();
+        $outro = User::factory()->create();
+        Categoria::criarPadraoPara($user);
+        Categoria::criarPadraoPara($outro);
+
+        $catAlimentacao = $user->categorias()->where('nome', 'Alimentação')->first();
+        $catTransporte = $user->categorias()->where('nome', 'Transporte')->first();
+        $catSalario = $user->categorias()->where('nome', 'Salário')->first();
+        $catOutro = $outro->categorias()->where('nome', 'Alimentação')->first();
+
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catAlimentacao->id,
+            'descricao' => 'Compra antiga',
+            'valor' => 50,
+            'data' => '2026-10-10',
+        ]);
+
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catAlimentacao->id,
+            'descricao' => 'Compra no período',
+            'valor' => 120,
+            'data' => '2026-11-15',
+        ]);
+
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catTransporte->id,
+            'descricao' => 'Uber no período',
+            'valor' => 35,
+            'data' => '2026-11-18',
+        ]);
+
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catSalario->id,
+            'descricao' => 'Salário novembro',
+            'valor' => 2500,
+            'data' => '2026-11-05',
+        ]);
+
+        Transacao::create([
+            'user_id' => $outro->id,
+            'categoria_id' => $catOutro->id,
+            'descricao' => 'Lançamento privado alheio',
+            'valor' => 999,
+            'data' => '2026-11-15',
+        ]);
+
+        // Filtro por período (de/ate) e tipo despesa
+        $resPeriodo = $this->actingAs($user)->get(route('transacoes.index', [
+            'de' => '2026-11-01',
+            'ate' => '2026-11-30',
+            'tipo' => 'despesa',
+        ]));
+        $resPeriodo->assertOk()
+            ->assertSee('Compra no período')
+            ->assertSee('Uber no período')
+            ->assertDontSee('Compra antiga')
+            ->assertDontSee('Salário novembro')
+            ->assertDontSee('Lançamento privado alheio');
+
+        // Verifica ordenação data DESC, id DESC
+        $rows = $resPeriodo->viewData('transacoes');
+        $this->assertCount(2, $rows);
+        $this->assertSame('Uber no período', $rows[0]->descricao);
+        $this->assertSame('Compra no período', $rows[1]->descricao);
+
+        // Filtro por categoria_id específica
+        $resCat = $this->actingAs($user)->get(route('transacoes.index', [
+            'categoria_id' => $catAlimentacao->id,
+        ]));
+        $resCat->assertOk()
+            ->assertSee('Compra antiga')
+            ->assertSee('Compra no período')
+            ->assertDontSee('Uber no período');
+    }
+
+    public function test_transacoes_index_neutraliza_payload_de_sql_injection_nos_filtros(): void
+    {
+        $user = User::factory()->create();
+        $outro = User::factory()->create();
+        Categoria::criarPadraoPara($user);
+        Categoria::criarPadraoPara($outro);
+
+        $catOutro = $outro->categorias()->first();
+        Transacao::create([
+            'user_id' => $outro->id,
+            'categoria_id' => $catOutro->id,
+            'descricao' => 'Dado secreto alheio',
+            'valor' => 500,
+            'data' => '2026-11-18',
+        ]);
+
+        $res = $this->actingAs($user)->get(route('transacoes.index', [
+            'de' => "2026-01-01' OR '1'='1",
+            'tipo' => "despesa' OR '1'='1",
+            'categoria_id' => '1 OR 1=1',
+        ]));
+
+        $res->assertOk()
+            ->assertDontSee('Dado secreto alheio');
+        $this->assertCount(0, $res->viewData('transacoes'));
+    }
 }

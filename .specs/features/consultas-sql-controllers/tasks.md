@@ -107,11 +107,11 @@ T1 → T2 → T3 → T4
 
 **Done when**:
 
-- [ ] `TransacaoController@index` executa `DB::select` com bindings `?` para todos os filtros (`de`, `ate`, `tipo`, `categoria_id`) e ordenação `data DESC, id DESC`
-- [ ] `resources/views/transacoes/index.blade.php` renderiza tabela e botões `.btn-editar` com todos os `data-*` idênticos
-- [ ] `tests/Feature/ConsultasSqlTest.php` valida filtros `de`/`ate`/`tipo`/`categoria_id`, ordenação, isolamento entre usuários e payload de SQL injection
-- [ ] Gate check passes: `php artisan test`
-- [ ] Test count: >= 43 tests pass (no silent deletions)
+- [x] `TransacaoController@index` executa `DB::select` com bindings `?` para todos os filtros (`de`, `ate`, `tipo`, `categoria_id`) e ordenação `data DESC, id DESC`
+- [x] `resources/views/transacoes/index.blade.php` renderiza tabela e botões `.btn-editar` com todos os `data-*` idênticos
+- [x] `tests/Feature/ConsultasSqlTest.php` valida filtros `de`/`ate`/`tipo`/`categoria_id`, ordenação, isolamento entre usuários e payload de SQL injection
+- [x] Gate check passes: `php artisan test`
+- [x] Test count: >= 43 tests pass (no silent deletions)
 
 **Tests**: feature
 **Gate**: full

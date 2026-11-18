@@ -94,7 +94,7 @@ Explicitly excluded. Documented to prevent scope creep.
 | -------------- | ----- | ----- | ------ |
 | SQL-01 | P1: Consultas SQL Explícitas no Painel e Relatórios | Tasks | Verified |
 | SQL-02 | P1: Consultas SQL Explícitas no Painel e Relatórios | Tasks | Verified |
-| SQL-03 | P1: Consultas SQL Explícitas em Transações e Orçamentos | Tasks | Pending |
+| SQL-03 | P1: Consultas SQL Explícitas em Transações e Orçamentos | Tasks | Verified |
 | SQL-04 | P1: Consultas SQL Explícitas em Transações e Orçamentos | Tasks | Pending |
 
 **Coverage:** 4 total, 0 mapped to tasks, 4 unmapped
