@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 4,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "weak_test::assert column nullability and foreign key delete rule explicitly when testing schema constraints",
+      "text": "Assert column nullability and foreign key delete rule explicitly when testing schema constraints",
+      "signal": "weak_test",
+      "scope": "tests,migrations",
+      "status": "candidate",
+      "features": [
+        "normalizacao-banco-mysql"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "tests/Feature/MeuBolsoTest.php:258-259 (C1) (tests,migrations)"
+      ],
+      "created": "2026-11-18T05:58:54Z",
+      "last_seen": "2026-11-18T05:58:54Z"
+    },
+    {
+      "id": "L-002",
+      "key": "weak_test::assert derived totals and view data across every page and chart named by the criterion",
+      "text": "Assert derived totals and view data across every page and chart named by the criterion",
+      "signal": "weak_test",
+      "scope": "tests,controllers",
+      "status": "candidate",
+      "features": [
+        "normalizacao-banco-mysql"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "tests/Feature/MeuBolsoTest.php:162-202 (C5) (tests,controllers)"
+      ],
+      "created": "2026-11-18T05:58:54Z",
+      "last_seen": "2026-11-18T05:58:54Z"
+    },
+    {
+      "id": "L-003",
+      "key": "weak_test::exercise every enum branch in filter tests rather than only one branch",
+      "text": "Exercise every enum branch in filter tests rather than only one branch",
+      "signal": "weak_test",
+      "scope": "tests,controllers",
+      "status": "candidate",
+      "features": [
+        "normalizacao-banco-mysql"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "tests/Feature/MeuBolsoTest.php:83-87 (C6) (tests,controllers)"
+      ],
+      "created": "2026-11-18T05:58:54Z",
+      "last_seen": "2026-11-18T05:58:54Z"
+    }
+  ]
+}

@@ -13,10 +13,10 @@
 ## Handoff
 
 - **Feature**: .specs/features/normalizacao-banco-mysql
-- **Phase / Task**: Specify - aguardando aprovação da spec pelo usuário
-- **Completed**: none
+- **Phase / Task**: Done (T1–T10 concluídas, Verifier auditou e achados fechados)
+- **Completed**: T1, T2, T3, T4, T5, T6, T7, T8, T9, T10
 - **In-progress**: none
-- **Next step**: Aprovar `spec.md` e prosseguir para `tasks.md`
+- **Next step**: Testar no navegador (`php artisan serve`) se desejar e definir próxima feature ou push
 - **Blockers**: none
-- **Uncommitted files**: .specs/STATE.md, .specs/features/normalizacao-banco-mysql/context.md, .specs/features/normalizacao-banco-mysql/spec.md
-- **Branch**: none (git ainda não inicializado; usuário autorizou `git init` antes da execução)
+- **Uncommitted files**: none
+- **Branch**: master
