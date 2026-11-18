@@ -287,4 +287,91 @@ class ConsultasSqlTest extends TestCase
             ->assertDontSee('Dado secreto alheio');
         $this->assertCount(0, $res->viewData('transacoes'));
     }
+
+    public function test_orcamentos_index_usa_db_select_parametrizado_e_isola_usuarios(): void
+    {
+        $user = User::factory()->create();
+        $outro = User::factory()->create();
+        Categoria::criarPadraoPara($user);
+        Categoria::criarPadraoPara($outro);
+
+        $catAlimentacao = $user->categorias()->where('nome', 'Alimentação')->first();
+        $catTransporte = $user->categorias()->where('nome', 'Transporte')->first();
+        $catOutro = $outro->categorias()->where('nome', 'Alimentação')->first();
+
+        $hoje = now()->format('Y-m-d');
+        $mes = now()->format('Y-m');
+
+        $orc = Orcamento::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catAlimentacao->id,
+            'mes_referencia' => $mes,
+            'limite' => 600.00,
+        ]);
+
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catAlimentacao->id,
+            'descricao' => 'Almoço',
+            'valor' => 100.00,
+            'data' => $hoje,
+        ]);
+
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catAlimentacao->id,
+            'descricao' => 'Mercado',
+            'valor' => 150.50,
+            'data' => $hoje,
+        ]);
+
+        // Dados de outro usuário não devem vazar
+        Orcamento::create([
+            'user_id' => $outro->id,
+            'categoria_id' => $catOutro->id,
+            'mes_referencia' => $mes,
+            'limite' => 9000.00,
+        ]);
+        Transacao::create([
+            'user_id' => $outro->id,
+            'categoria_id' => $catOutro->id,
+            'descricao' => 'Gasto alheio',
+            'valor' => 888.00,
+            'data' => $hoje,
+        ]);
+
+        $res = $this->actingAs($user)->get(route('orcamentos.index', ['mes' => $mes]));
+        $res->assertOk()
+            ->assertSee('250,50')
+            ->assertSee('600,00')
+            ->assertDontSee('9.000,00');
+
+        $cats = collect($res->viewData('categorias'))->keyBy('nome');
+        $this->assertCount(5, $cats);
+        $this->assertFalse($cats->has('Salário'));
+        $this->assertSame(250.5, $cats->get('Alimentação')['gasto']);
+        $this->assertSame(600.0, $cats->get('Alimentação')['limite']);
+        $this->assertSame($orc->id, $cats->get('Alimentação')['orcamento_id']);
+        $this->assertSame(0.0, $cats->get('Transporte')['gasto']);
+        $this->assertNull($cats->get('Transporte')['limite']);
+        $this->assertNull($cats->get('Transporte')['orcamento_id']);
+    }
+
+    public function test_orcamentos_index_retorna_gasto_zero_e_limite_nulo_quando_vazio(): void
+    {
+        $user = User::factory()->create();
+        Categoria::criarPadraoPara($user);
+        $mes = now()->format('Y-m');
+
+        $res = $this->actingAs($user)->get(route('orcamentos.index', ['mes' => $mes]));
+        $res->assertOk();
+
+        $cats = collect($res->viewData('categorias'));
+        $this->assertCount(5, $cats);
+        foreach ($cats as $cat) {
+            $this->assertSame(0.0, $cat['gasto']);
+            $this->assertNull($cat['limite']);
+            $this->assertNull($cat['orcamento_id']);
+        }
+    }
 }

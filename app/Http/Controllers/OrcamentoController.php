@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Orcamento;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class OrcamentoController extends Controller
@@ -21,33 +22,35 @@ class OrcamentoController extends Controller
         $inicio = Carbon::createFromFormat('Y-m', $mes)->startOfMonth()->toDateString();
         $fim = Carbon::createFromFormat('Y-m', $mes)->endOfMonth()->toDateString();
 
-        $gastosPorCat = $user->transacoes()
-            ->whereHas('categoria', fn ($q) => $q->where('tipo', 'despesa'))
-            ->whereBetween('data', [$inicio, $fim])
-            ->selectRaw('categoria_id, SUM(valor) as total')
-            ->groupBy('categoria_id')
-            ->pluck('total', 'categoria_id');
+        $rows = DB::select("
+            SELECT
+                c.id,
+                c.nome,
+                COALESCE(SUM(t.valor), 0) AS gasto,
+                o.limite,
+                o.id AS orcamento_id
+            FROM categorias c
+            LEFT JOIN transacoes t
+                ON t.categoria_id = c.id
+               AND t.user_id = c.user_id
+               AND DATE(t.data) BETWEEN ? AND ?
+            LEFT JOIN orcamentos o
+                ON o.categoria_id = c.id
+               AND o.user_id = c.user_id
+               AND o.mes_referencia = ?
+            WHERE c.user_id = ?
+              AND c.tipo = 'despesa'
+            GROUP BY c.id, c.nome, o.limite, o.id
+            ORDER BY c.nome ASC
+        ", [$inicio, $fim, $mes, $user->id]);
 
-        $metasPorCat = $user->orcamentos()
-            ->where('mes_referencia', $mes)
-            ->get()
-            ->keyBy('categoria_id');
-
-        $categorias = $user->categorias()
-            ->where('tipo', 'despesa')
-            ->orderBy('nome')
-            ->get()
-            ->map(function ($cat) use ($gastosPorCat, $metasPorCat) {
-                $meta = $metasPorCat->get($cat->id);
-
-                return [
-                    'id' => $cat->id,
-                    'nome' => $cat->nome,
-                    'gasto' => (float) ($gastosPorCat[$cat->id] ?? 0),
-                    'limite' => $meta ? (float) $meta->limite : null,
-                    'orcamento_id' => $meta?->id,
-                ];
-            });
+        $categorias = collect($rows)->map(fn ($row) => [
+            'id' => (int) $row->id,
+            'nome' => $row->nome,
+            'gasto' => (float) $row->gasto,
+            'limite' => $row->limite !== null ? (float) $row->limite : null,
+            'orcamento_id' => $row->orcamento_id !== null ? (int) $row->orcamento_id : null,
+        ]);
 
         return view('orcamentos.index', compact('categorias', 'mes'));
     }

@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: skipped - refatoração direta das queries de leitura nos 4 controllers MVC para `DB::select` parametrizado
-**Status**: In Progress
+**Status**: Done
 **Approved**: 2026-11-18 - user: "sim"
 **Build**: `php artisan test`
 **Run sql**: `php vendor/bin/phpunit --testdox tests/Feature/ConsultasSqlTest.php`
@@ -130,10 +130,10 @@ T1 → T2 → T3 → T4
 
 **Done when**:
 
-- [ ] `OrcamentoController@index` executa `DB::select` parametrizado com `user_id = ?` e `tipo = 'despesa'`
-- [ ] `tests/Feature/ConsultasSqlTest.php` valida categorias `despesa`, soma `float` de gastos, limites `float|null`, estado vazio e isolamento entre usuários em `/orcamentos`
-- [ ] Gate check passes: `php artisan test`
-- [ ] Test count: >= 45 tests pass (no silent deletions)
+- [x] `OrcamentoController@index` executa `DB::select` parametrizado com `user_id = ?` e `tipo = 'despesa'`
+- [x] `tests/Feature/ConsultasSqlTest.php` valida categorias `despesa`, soma `float` de gastos, limites `float|null`, estado vazio e isolamento entre usuários em `/orcamentos`
+- [x] Gate check passes: `php artisan test`
+- [x] Test count: >= 45 tests pass (no silent deletions)
 
 **Tests**: feature
 **Gate**: full
