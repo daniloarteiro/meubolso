@@ -31,7 +31,9 @@
                     @endforeach
                 </ul>
                 <div class="d-flex align-items-center gap-3">
-                    <span class="text-light small d-none d-md-inline opacity-75">Olá, {{ auth()->user()->name }}</span>
+                    <a href="{{ route('profile.edit') }}" class="link-light link-underline-opacity-0 link-underline-opacity-75-hover small">
+                        Meu Perfil ({{ auth()->user()->name }})
+                    </a>
                     <form method="POST" action="{{ route('logout') }}" class="m-0">
                         @csrf
                         <button type="submit" class="btn btn-outline-light btn-sm">Sair</button>

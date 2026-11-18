@@ -317,4 +317,22 @@ class MeuBolsoTest extends TestCase
             ->assertSee('data-tipo="receita"', false)
             ->assertSee('data-categoria="'.$catSalario->id.'"', false);
     }
+
+    public function test_barra_de_navegacao_exibe_link_para_meu_perfil(): void
+    {
+        $user = User::factory()->create();
+        Categoria::criarPadraoPara($user);
+
+        $this->actingAs($user)
+            ->get(route('painel.index'))
+            ->assertOk()
+            ->assertSee('href="'.route('profile.edit').'"', false);
+
+        $this->actingAs($user)
+            ->get(route('profile.edit'))
+            ->assertOk()
+            ->assertSee('Dados da conta')
+            ->assertSee('Alterar senha')
+            ->assertSee('Excluir conta');
+    }
 }

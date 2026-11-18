@@ -228,10 +228,10 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] Navbar autenticada renderiza link clicável apontando para `route('profile.edit')`
-- [ ] Teste em `tests/Feature/MeuBolsoTest.php` valida presença do link `/profile` no `/painel` e retorno HTTP 200 em `/profile`
-- [ ] Gate check passes: `php artisan test`
-- [ ] Test count: >= 37 tests pass (no silent deletions)
+- [x] Navbar autenticada renderiza link clicável apontando para `route('profile.edit')`
+- [x] Teste em `tests/Feature/MeuBolsoTest.php` valida presença do link `/profile` no `/painel` e retorno HTTP 200 em `/profile`
+- [x] Gate check passes: `php artisan test`
+- [x] Test count: >= 37 tests pass (no silent deletions)
 
 **Tests**: feature
 **Gate**: full

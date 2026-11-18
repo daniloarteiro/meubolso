@@ -201,7 +201,7 @@ erDiagram
 | ORC-02 | P1: Filtro Dinâmico no Modal de Transações e Validação de Orçamentos | Tasks | Verified |
 | ENV-01 | P1: Conexão MySQL, Carga Inicial e Verificação do Sistema | Tasks | Pending |
 | ENV-02 | P1: Conexão MySQL, Carga Inicial e Verificação do Sistema | Tasks | Pending |
-| NAV-01 | P2: Navegação para Meu Perfil | Tasks | Pending |
+| NAV-01 | P2: Navegação para Meu Perfil | Tasks | Verified |
 
 **Coverage:** 12 total, 0 mapped to tasks, 12 unmapped
 
