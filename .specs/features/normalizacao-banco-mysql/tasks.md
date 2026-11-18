@@ -138,10 +138,10 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] `RelatorioController::montarDados` consulta receitas e despesas via `categorias.tipo`
-- [ ] Teste em `tests/Feature/MeuBolsoTest.php` valida totais de receita/despesa no relatório e PDF derivados da categoria
-- [ ] Gate check passes: `php artisan test`
-- [ ] Test count: >= 31 tests pass (no silent deletions)
+- [x] `RelatorioController::montarDados` consulta receitas e despesas via `categorias.tipo`
+- [x] Teste em `tests/Feature/MeuBolsoTest.php` valida totais de receita/despesa no relatório e PDF derivados da categoria
+- [x] Gate check passes: `php artisan test`
+- [x] Test count: >= 31 tests pass (no silent deletions)
 
 **Tests**: feature
 **Gate**: full

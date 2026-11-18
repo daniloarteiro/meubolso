@@ -39,19 +39,19 @@ class RelatorioController extends Controller
         $fim = $dataBase->copy()->endOfMonth()->toDateString();
 
         $receitas = (float) $user->transacoes()
-            ->where('tipo', 'receita')
+            ->whereHas('categoria', fn ($q) => $q->where('tipo', 'receita'))
             ->whereBetween('data', [$inicio, $fim])
             ->sum('valor');
 
         $despesas = (float) $user->transacoes()
-            ->where('tipo', 'despesa')
+            ->whereHas('categoria', fn ($q) => $q->where('tipo', 'despesa'))
             ->whereBetween('data', [$inicio, $fim])
             ->sum('valor');
 
         $saldo = $receitas - $despesas;
 
         $gastosPorCat = $user->transacoes()
-            ->where('tipo', 'despesa')
+            ->whereHas('categoria', fn ($q) => $q->where('tipo', 'despesa'))
             ->whereBetween('data', [$inicio, $fim])
             ->selectRaw('categoria_id, SUM(valor) as total')
             ->groupBy('categoria_id')

@@ -183,5 +183,16 @@ class MeuBolsoTest extends TestCase
             ->assertViewHas('receitas', 1500.0)
             ->assertViewHas('despesas', 250.0)
             ->assertViewHas('saldo', 1250.0);
+
+        $mes = now()->format('Y-m');
+        $resRelatorio = $this->actingAs($user)->get(route('relatorios.index', ['mes' => $mes]));
+        $resRelatorio->assertOk()
+            ->assertViewHas('receitas', 1500.0)
+            ->assertViewHas('despesas', 250.0)
+            ->assertViewHas('saldo', 1250.0);
+
+        $pdf = $this->actingAs($user)->get(route('relatorios.pdf', ['mes' => $mes]));
+        $pdf->assertOk();
+        $this->assertStringContainsString('application/pdf', $pdf->headers->get('content-type'));
     }
 }
