@@ -29,13 +29,13 @@ class RelatorioController extends Controller
     private function montarDados(Request $request): array
     {
         $user = $request->user();
-        $mes = $request->input('mes', now()->format('Y-m'));
+        $mes = $request->input('mes');
 
-        if (! preg_match('/^\d{4}-\d{2}$/', $mes)) {
+        if (! is_string($mes) || ! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $mes)) {
             $mes = now()->format('Y-m');
         }
 
-        $dataBase = Carbon::createFromFormat('Y-m', $mes);
+        $dataBase = Carbon::createFromFormat('!Y-m', $mes);
         $inicio = $dataBase->copy()->startOfMonth()->toDateString();
         $fim = $dataBase->copy()->endOfMonth()->toDateString();
 

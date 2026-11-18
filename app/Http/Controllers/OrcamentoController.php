@@ -13,14 +13,15 @@ class OrcamentoController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $mes = $request->input('mes', now()->format('Y-m'));
+        $mes = $request->input('mes');
 
-        if (! preg_match('/^\d{4}-\d{2}$/', $mes)) {
+        if (! is_string($mes) || ! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $mes)) {
             $mes = now()->format('Y-m');
         }
 
-        $inicio = Carbon::createFromFormat('Y-m', $mes)->startOfMonth()->toDateString();
-        $fim = Carbon::createFromFormat('Y-m', $mes)->endOfMonth()->toDateString();
+        $dataBase = Carbon::createFromFormat('!Y-m', $mes);
+        $inicio = $dataBase->copy()->startOfMonth()->toDateString();
+        $fim = $dataBase->copy()->endOfMonth()->toDateString();
 
         $rows = DB::select("
             SELECT

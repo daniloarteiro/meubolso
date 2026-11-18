@@ -168,6 +168,9 @@ Proof: run sql | ✔ Orcamentos index usa db select parametrizado e isola usuari
 **C8** - Usuário sem transações e sem metas no mês recebe `gasto = 0.0` e `limite = null` em todas as categorias `despesa` em `/orcamentos` (SQL-04, Edge Case)
 Proof: run sql | ✔ Orcamentos index retorna gasto zero e limite nulo quando vazio
 
+**C9** - Parâmetros em array (`mes[]`, `de[]`, `ate[]`, `tipo[]`, `categoria_id[]`) e mês inválido/overflow (`2026-13`, `2026-02` no dia 31) retornam HTTP 200 sem `TypeError` nem overflow de mês (SQL-05, Edge Case)
+Proof: run sql | ✔ Parametros em array e mes invalido nao geram erro 500 nem overflow
+
 ---
 
 ## Handoff
@@ -175,7 +178,7 @@ Proof: run sql | ✔ Orcamentos index retorna gasto zero e limite nulo quando va
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** Verifier (sub-agent `self`) após commit do walk
+**Dispatched:** Verifier (sub-agent `self`) após commit do walk -> returned (FAIL: 5 findings on C1, C3, C5, array params, mes overflow)
 **Walked:** Login como `danilo@meubolso.com` contra MySQL `meubolso` em `http://127.0.0.1:8012`. `/painel` exibiu "Novembro de 2026" e 5 transações; `/transacoes` listou lançamentos e filtrou modais (`despesa` 5 opções, `receita` 2 opções, edição pré-selecionando `6` e `3`); `/orcamentos` exibiu 5 metas; `/relatorios` e `/relatorios/pdf` retornaram 200 (`application/pdf`).
 
 ---

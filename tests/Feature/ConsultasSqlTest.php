@@ -6,6 +6,7 @@ use App\Models\Categoria;
 use App\Models\Orcamento;
 use App\Models\Transacao;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -26,6 +27,24 @@ class ConsultasSqlTest extends TestCase
 
         $hoje = now()->format('Y-m-d');
         $mesAnterior = now()->subMonthNoOverflow()->startOfMonth()->addDays(4)->format('Y-m-d');
+        $doisMesesAtras = now()->subMonthsNoOverflow(2)->startOfMonth()->addDays(2)->format('Y-m-d');
+
+        // 6 transações do usuário para comprovar LIMIT 5 e ordenação data DESC, id DESC
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catSalario->id,
+            'descricao' => 'Sexta mais antiga',
+            'valor' => 500.00,
+            'data' => $doisMesesAtras,
+        ]);
+
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catSalario->id,
+            'descricao' => 'Salário anterior',
+            'valor' => 1500.00,
+            'data' => $mesAnterior,
+        ]);
 
         Transacao::create([
             'user_id' => $user->id,
@@ -38,17 +57,25 @@ class ConsultasSqlTest extends TestCase
         Transacao::create([
             'user_id' => $user->id,
             'categoria_id' => $catAlimentacao->id,
-            'descricao' => 'Supermercado',
-            'valor' => 350.50,
+            'descricao' => 'Café da manhã',
+            'valor' => 50.50,
             'data' => $hoje,
         ]);
 
         Transacao::create([
             'user_id' => $user->id,
-            'categoria_id' => $catSalario->id,
-            'descricao' => 'Salário anterior',
-            'valor' => 1500.00,
-            'data' => $mesAnterior,
+            'categoria_id' => $catAlimentacao->id,
+            'descricao' => 'Almoço',
+            'valor' => 100.00,
+            'data' => $hoje,
+        ]);
+
+        $ultima = Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catAlimentacao->id,
+            'descricao' => 'Supermercado',
+            'valor' => 200.00,
+            'data' => $hoje,
         ]);
 
         // Dados de outro usuário não devem interferir
@@ -66,7 +93,16 @@ class ConsultasSqlTest extends TestCase
             ->assertViewHas('despesas', 350.5)
             ->assertViewHas('saldo', 1649.5)
             ->assertSee('Supermercado')
+            ->assertDontSee('Sexta mais antiga')
             ->assertDontSee('Receita alheia');
+
+        $ultimas = $res->viewData('transacoes');
+        $this->assertCount(5, $ultimas);
+        $this->assertSame($ultima->id, $ultimas[0]->id);
+        $this->assertSame('Almoço', $ultimas[1]->descricao);
+        $this->assertSame('Café da manhã', $ultimas[2]->descricao);
+        $this->assertSame('Salário atual', $ultimas[3]->descricao);
+        $this->assertSame('Salário anterior', $ultimas[4]->descricao);
 
         $cats = collect($res->viewData('categorias'))->keyBy('nome');
         $this->assertSame(350.5, $cats->get('Alimentação')['gasto']);
@@ -75,6 +111,7 @@ class ConsultasSqlTest extends TestCase
 
         $meses = $res->viewData('meses');
         $this->assertCount(6, $meses);
+        $this->assertSame(500.0, $meses[3]['receitas']);
         $this->assertSame(1500.0, $meses[4]['receitas']);
         $this->assertSame(2000.0, $meses[5]['receitas']);
         $this->assertSame(350.5, $meses[5]['despesas']);
@@ -132,6 +169,15 @@ class ConsultasSqlTest extends TestCase
             'data' => $hoje,
         ]);
 
+        // Lançamento fora do mês selecionado não deve entrar
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catAlimentacao->id,
+            'descricao' => 'Mês passado',
+            'valor' => 77.00,
+            'data' => now()->subMonthNoOverflow()->startOfMonth()->addDays(2)->format('Y-m-d'),
+        ]);
+
         Transacao::create([
             'user_id' => $outro->id,
             'categoria_id' => $catOutro->id,
@@ -155,9 +201,14 @@ class ConsultasSqlTest extends TestCase
         $this->assertSame(75.0, (float) $cats[0]['percentual']);
         $this->assertSame(25.0, (float) $cats[1]['percentual']);
 
+        $transacoesMes = $res->viewData('transacoes');
+        $this->assertCount(3, $transacoesMes);
+        $this->assertSame(['Passagem', 'Almoço', 'Freela API'], collect($transacoesMes)->pluck('descricao')->all());
+
         $pdf = $this->actingAs($user)->get(route('relatorios.pdf', ['mes' => $mes]));
         $pdf->assertOk();
         $this->assertStringContainsString('application/pdf', $pdf->headers->get('content-type'));
+        $this->assertStringStartsWith('%PDF-', $pdf->getContent());
     }
 
     public function test_relatorio_trata_mes_vazio_sem_divisao_por_zero(): void
@@ -208,11 +259,19 @@ class ConsultasSqlTest extends TestCase
             'data' => '2026-11-15',
         ]);
 
-        Transacao::create([
+        $uber1 = Transacao::create([
             'user_id' => $user->id,
             'categoria_id' => $catTransporte->id,
-            'descricao' => 'Uber no período',
+            'descricao' => 'Uber manhã',
             'valor' => 35,
+            'data' => '2026-11-18',
+        ]);
+
+        $uber2 = Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catTransporte->id,
+            'descricao' => 'Uber noite',
+            'valor' => 42,
             'data' => '2026-11-18',
         ]);
 
@@ -240,16 +299,18 @@ class ConsultasSqlTest extends TestCase
         ]));
         $resPeriodo->assertOk()
             ->assertSee('Compra no período')
-            ->assertSee('Uber no período')
+            ->assertSee('Uber manhã')
+            ->assertSee('Uber noite')
             ->assertDontSee('Compra antiga')
             ->assertDontSee('Salário novembro')
             ->assertDontSee('Lançamento privado alheio');
 
-        // Verifica ordenação data DESC, id DESC
+        // Verifica ordenação data DESC, id DESC inclusive no desempate de mesma data
         $rows = $resPeriodo->viewData('transacoes');
-        $this->assertCount(2, $rows);
-        $this->assertSame('Uber no período', $rows[0]->descricao);
-        $this->assertSame('Compra no período', $rows[1]->descricao);
+        $this->assertCount(3, $rows);
+        $this->assertSame($uber2->id, $rows[0]->id);
+        $this->assertSame($uber1->id, $rows[1]->id);
+        $this->assertSame('Compra no período', $rows[2]->descricao);
 
         // Filtro por categoria_id específica
         $resCat = $this->actingAs($user)->get(route('transacoes.index', [
@@ -258,7 +319,7 @@ class ConsultasSqlTest extends TestCase
         $resCat->assertOk()
             ->assertSee('Compra antiga')
             ->assertSee('Compra no período')
-            ->assertDontSee('Uber no período');
+            ->assertDontSee('Uber noite');
     }
 
     public function test_transacoes_index_neutraliza_payload_de_sql_injection_nos_filtros(): void
@@ -372,6 +433,38 @@ class ConsultasSqlTest extends TestCase
             $this->assertSame(0.0, $cat['gasto']);
             $this->assertNull($cat['limite']);
             $this->assertNull($cat['orcamento_id']);
+        }
+    }
+
+    public function test_parametros_em_array_e_mes_invalido_nao_geram_erro_500_nem_overflow(): void
+    {
+        $user = User::factory()->create();
+        Categoria::criarPadraoPara($user);
+
+        // Parâmetros em array não podem causar TypeError 500
+        $this->actingAs($user)->get('/relatorios?mes[]=2026-11')->assertOk();
+        $this->actingAs($user)->get('/orcamentos?mes[]=2026-11')->assertOk();
+        $this->actingAs($user)->get('/transacoes?de[]=2026-01-01&ate[]=2026-12-31&tipo[]=despesa&categoria_id[]=1')->assertOk();
+
+        // Mês 13 inválido deve cair no mês atual (sem overflow para 2027-01)
+        Carbon::setTestNow('2026-03-31');
+        try {
+            $this->actingAs($user)->get('/relatorios?mes=2026-13')
+                ->assertOk()
+                ->assertViewHas('mes', '2026-03')
+                ->assertViewHas('mesLabel', 'Março de 2026');
+
+            // Mês 02 no dia 31 de março não pode fazer overflow para Março
+            $this->actingAs($user)->get('/relatorios?mes=2026-02')
+                ->assertOk()
+                ->assertViewHas('mes', '2026-02')
+                ->assertViewHas('mesLabel', 'Fevereiro de 2026');
+
+            $this->actingAs($user)->get('/orcamentos?mes=2026-02')
+                ->assertOk()
+                ->assertViewHas('mes', '2026-02');
+        } finally {
+            Carbon::setTestNow();
         }
     }
 }

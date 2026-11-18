@@ -12,11 +12,11 @@
         <div class="row g-2">
             <div class="col-6 col-md-3">
                 <label class="form-label" for="de">De</label>
-                <input type="date" class="form-control" id="de" name="de" value="{{ request('de') }}">
+                <input type="date" class="form-control" id="de" name="de" value="{{ is_string(request('de')) ? request('de') : '' }}">
             </div>
             <div class="col-6 col-md-3">
                 <label class="form-label" for="ate">Até</label>
-                <input type="date" class="form-control" id="ate" name="ate" value="{{ request('ate') }}">
+                <input type="date" class="form-control" id="ate" name="ate" value="{{ is_string(request('ate')) ? request('ate') : '' }}">
             </div>
             <div class="col-6 col-md-3">
                 <label class="form-label" for="tipo">Tipo</label>
@@ -31,7 +31,7 @@
                 <select class="form-select" id="categoria_id" name="categoria_id">
                     <option value="">Todas</option>
                     @foreach ($categorias as $c)
-                        <option value="{{ $c->id }}" {{ (string) request('categoria_id') === (string) $c->id ? 'selected' : '' }}>
+                        <option value="{{ $c->id }}" {{ is_scalar(request('categoria_id')) && (string) request('categoria_id') === (string) $c->id ? 'selected' : '' }}>
                             {{ $c->nome }}
                         </option>
                     @endforeach

@@ -14,25 +14,29 @@ class TransacaoController extends Controller
         $filtros = ['t.user_id = ?'];
         $params = [$user->id];
 
-        if ($request->filled('de')) {
+        $de = $request->input('de');
+        if (is_string($de) && $de !== '') {
             $filtros[] = 'DATE(t.data) >= ?';
-            $params[] = $request->input('de');
+            $params[] = $de;
         }
 
-        if ($request->filled('ate')) {
+        $ate = $request->input('ate');
+        if (is_string($ate) && $ate !== '') {
             $filtros[] = 'DATE(t.data) <= ?';
-            $params[] = $request->input('ate');
+            $params[] = $ate;
         }
 
-        if ($request->filled('tipo')) {
+        $tipo = $request->input('tipo');
+        if (is_string($tipo) && $tipo !== '') {
             $filtros[] = 'c.tipo = ?';
-            $params[] = $request->input('tipo');
+            $params[] = $tipo;
         }
 
-        if ($request->filled('categoria_id')) {
+        $categoriaId = $request->input('categoria_id');
+        if (is_scalar($categoriaId) && (string) $categoriaId !== '') {
             $filtros[] = 't.categoria_id = ?';
-            $params[] = ctype_digit((string) $request->input('categoria_id'))
-                ? (int) $request->input('categoria_id')
+            $params[] = ctype_digit((string) $categoriaId)
+                ? (int) $categoriaId
                 : 0;
         }
 

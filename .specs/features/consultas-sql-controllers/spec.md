@@ -77,6 +77,7 @@ Explicitly excluded. Documented to prevent scope creep.
 - IF a user has zero transactions or zero budgets in the selected month THEN `DB::select` aggregations SHALL return `0.0` for `receitas`, `despesas`, `saldo`, and `gasto` without division-by-zero or null errors.
 - IF `TransacaoController@index` receives SQL-injection payloads in `de`, `ate`, `tipo`, or `categoria_id` THEN parameterized bindings `?` SHALL treat them strictly as bound parameter values without altering SQL structure.
 - IF `PainelController`, `TransacaoController`, `OrcamentoController`, or `RelatorioController` queries run for user A when user B also has transactions and budgets THEN no record owned by user B SHALL appear in user A's results.
+- IF query parameters (`mes`, `de`, `ate`, `tipo`, `categoria_id`) arrive as arrays or `mes` has an out-of-range month (`13`) or day-31 rollover (`!Y-m`) THEN the controllers and views SHALL fall back safely to scalar/current-month values without HTTP 500 or month overflow.
 
 ---
 
@@ -96,8 +97,9 @@ Explicitly excluded. Documented to prevent scope creep.
 | SQL-02 | P1: Consultas SQL Explícitas no Painel e Relatórios | Tasks | Verified |
 | SQL-03 | P1: Consultas SQL Explícitas em Transações e Orçamentos | Tasks | Verified |
 | SQL-04 | P1: Consultas SQL Explícitas em Transações e Orçamentos | Tasks | Verified |
+| SQL-05 | Edge Cases: Sanitização de parâmetros em array e mês inválido | Tasks | Verified |
 
-**Coverage:** 4 total, 0 mapped to tasks, 4 unmapped
+**Coverage:** 5 total, 5 mapped to tasks, 0 unmapped
 
 ---
 
