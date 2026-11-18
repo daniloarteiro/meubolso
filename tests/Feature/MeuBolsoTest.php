@@ -6,7 +6,9 @@ use App\Models\Categoria;
 use App\Models\Orcamento;
 use App\Models\Transacao;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class MeuBolsoTest extends TestCase
@@ -42,9 +44,8 @@ class MeuBolsoTest extends TestCase
         $catAlimentacao = $user->categorias()->where('nome', 'Alimentação')->first();
         $catSalario = $user->categorias()->where('nome', 'Salário')->first();
 
-        // Criar despesa
+        // Criar despesa sem enviar tipo redundante
         $this->actingAs($user)->post(route('transacoes.store'), [
-            'tipo' => 'despesa',
             'descricao' => 'Almoço',
             'valor' => 45.50,
             'data' => now()->format('Y-m-d'),
@@ -54,10 +55,10 @@ class MeuBolsoTest extends TestCase
         $transacao = Transacao::where('user_id', $user->id)->first();
         $this->assertNotNull($transacao);
         $this->assertEquals('Almoço', $transacao->descricao);
+        $this->assertEquals('despesa', $transacao->tipo);
 
-        // Editar
+        // Editar mudando para categoria de receita
         $this->actingAs($user)->put(route('transacoes.update', $transacao), [
-            'tipo' => 'receita',
             'descricao' => 'Estágio',
             'valor' => 1500.00,
             'data' => now()->format('Y-m-d'),
@@ -67,14 +68,23 @@ class MeuBolsoTest extends TestCase
         $this->assertDatabaseHas('transacoes', [
             'id' => $transacao->id,
             'descricao' => 'Estágio',
-            'tipo' => 'receita',
+            'categoria_id' => $catSalario->id,
         ]);
 
-        // Filtro por tipo
+        // Filtro por tipo derivado da categoria (exclui despesa, inclui receita)
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catAlimentacao->id,
+            'descricao' => 'Café',
+            'valor' => 12.00,
+            'data' => now()->format('Y-m-d'),
+        ]);
+
         $this->actingAs($user)
             ->get(route('transacoes.index', ['tipo' => 'receita']))
             ->assertOk()
-            ->assertSee('Estágio');
+            ->assertSee('Estágio')
+            ->assertDontSee('Café');
 
         // Excluir
         $this->actingAs($user)
@@ -97,14 +107,12 @@ class MeuBolsoTest extends TestCase
         $transacao = Transacao::create([
             'user_id' => $dono->id,
             'categoria_id' => $catDono->id,
-            'tipo' => 'despesa',
             'descricao' => 'Conta privada',
             'valor' => 100,
             'data' => now()->format('Y-m-d'),
         ]);
 
         $this->actingAs($outro)->put(route('transacoes.update', $transacao), [
-            'tipo' => 'despesa',
             'descricao' => 'Invadido',
             'valor' => 200,
             'data' => now()->format('Y-m-d'),
@@ -137,7 +145,6 @@ class MeuBolsoTest extends TestCase
         Transacao::create([
             'user_id' => $user->id,
             'categoria_id' => $cat->id,
-            'tipo' => 'despesa',
             'descricao' => 'Mercado',
             'valor' => 250,
             'data' => now()->format('Y-m-d'),
@@ -163,7 +170,6 @@ class MeuBolsoTest extends TestCase
         Transacao::create([
             'user_id' => $user->id,
             'categoria_id' => $catSalario->id,
-            'tipo' => 'despesa', // propositalmente divergente para provar derivacao pela categoria
             'descricao' => 'Bolsa estágio',
             'valor' => 1500.00,
             'data' => $hoje,
@@ -172,7 +178,6 @@ class MeuBolsoTest extends TestCase
         Transacao::create([
             'user_id' => $user->id,
             'categoria_id' => $catAlimentacao->id,
-            'tipo' => 'receita', // propositalmente divergente para provar derivacao pela categoria
             'descricao' => 'Jantar',
             'valor' => 250.00,
             'data' => $hoje,
@@ -235,7 +240,6 @@ class MeuBolsoTest extends TestCase
         $transacao = Transacao::create([
             'user_id' => $user->id,
             'categoria_id' => $catAlimentacao->id,
-            'tipo' => 'despesa',
             'descricao' => 'Supermercado',
             'valor' => 100,
             'data' => now()->format('Y-m-d'),
@@ -247,5 +251,49 @@ class MeuBolsoTest extends TestCase
 
         $this->assertDatabaseMissing('orcamentos', ['id' => $orcamento->id]);
         $this->assertDatabaseHas('transacoes', ['id' => $transacao->id]);
+    }
+
+    public function test_schema_normalizado_sem_tipo_em_transacoes_e_com_indices_esperados(): void
+    {
+        $this->assertFalse(Schema::hasColumn('transacoes', 'tipo'));
+        $this->assertTrue(Schema::hasColumn('transacoes', 'categoria_id'));
+
+        $orcamentoIndexes = collect(Schema::getIndexes('orcamentos'));
+        $this->assertTrue(
+            $orcamentoIndexes->contains(fn ($idx) => $idx['columns'] === ['user_id', 'mes_referencia']),
+            'Índice (user_id, mes_referencia) não encontrado em orcamentos.'
+        );
+        $this->assertTrue(
+            $orcamentoIndexes->contains(fn ($idx) => $idx['unique'] && $idx['columns'] === ['user_id', 'categoria_id', 'mes_referencia']),
+            'Unique (user_id, categoria_id, mes_referencia) não encontrada em orcamentos.'
+        );
+
+        $user = User::factory()->create();
+
+        // Mesmo nome permitido em tipos distintos; duplicado no mesmo tipo bloqueado
+        $catDespesa = Categoria::create(['user_id' => $user->id, 'nome' => 'Reembolso', 'tipo' => 'despesa', 'cor' => '#111111']);
+        $catReceita = Categoria::create(['user_id' => $user->id, 'nome' => 'Reembolso', 'tipo' => 'receita', 'cor' => '#222222']);
+        $this->assertNotEquals($catDespesa->id, $catReceita->id);
+
+        $this->expectException(QueryException::class);
+        Categoria::create(['user_id' => $user->id, 'nome' => 'Reembolso', 'tipo' => 'despesa', 'cor' => '#333333']);
+    }
+
+    public function test_categoria_com_transacoes_nao_pode_ser_excluida(): void
+    {
+        $user = User::factory()->create();
+        Categoria::criarPadraoPara($user);
+        $cat = $user->categorias()->where('nome', 'Alimentação')->first();
+
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $cat->id,
+            'descricao' => 'Lanche',
+            'valor' => 20,
+            'data' => now()->format('Y-m-d'),
+        ]);
+
+        $this->expectException(QueryException::class);
+        $cat->delete();
     }
 }

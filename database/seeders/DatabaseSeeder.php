@@ -33,14 +33,14 @@ class DatabaseSeeder extends Seeder
 
         // Lançamentos do mês atual
         $lancamentos = [
-            ['data' => $agora->copy()->startOfMonth()->addDays(9), 'descricao' => 'Estágio',           'categoria' => 'Salário',     'tipo' => 'receita', 'valor' => 1800.00],
-            ['data' => $agora->copy()->startOfMonth()->addDays(8), 'descricao' => 'Mensalidade',       'categoria' => 'Mensalidade', 'tipo' => 'despesa', 'valor' => 780.00],
-            ['data' => $agora->copy()->startOfMonth()->addDays(7), 'descricao' => 'Almoço no centro',  'categoria' => 'Alimentação', 'tipo' => 'despesa', 'valor' => 32.50],
-            ['data' => $agora->copy()->startOfMonth()->addDays(6), 'descricao' => 'Supermercado',      'categoria' => 'Alimentação', 'tipo' => 'despesa', 'valor' => 417.50],
-            ['data' => $agora->copy()->startOfMonth()->addDays(5), 'descricao' => 'Site para cliente', 'categoria' => 'Freelance',   'tipo' => 'receita', 'valor' => 700.00],
-            ['data' => $agora->copy()->startOfMonth()->addDays(4), 'descricao' => 'Ônibus (recarga)',  'categoria' => 'Transporte',  'tipo' => 'despesa', 'valor' => 220.00],
-            ['data' => $agora->copy()->startOfMonth()->addDays(2), 'descricao' => 'Cinema e lanche',   'categoria' => 'Lazer',       'tipo' => 'despesa', 'valor' => 310.00],
-            ['data' => $agora->copy()->startOfMonth()->addDays(1), 'descricao' => 'Papelaria',         'categoria' => 'Outros',      'tipo' => 'despesa', 'valor' => 90.00],
+            ['data' => $agora->copy()->startOfMonth()->addDays(9), 'descricao' => 'Estágio',           'categoria' => 'Salário',     'valor' => 1800.00],
+            ['data' => $agora->copy()->startOfMonth()->addDays(8), 'descricao' => 'Mensalidade',       'categoria' => 'Mensalidade', 'valor' => 780.00],
+            ['data' => $agora->copy()->startOfMonth()->addDays(7), 'descricao' => 'Almoço no centro',  'categoria' => 'Alimentação', 'valor' => 32.50],
+            ['data' => $agora->copy()->startOfMonth()->addDays(6), 'descricao' => 'Supermercado',      'categoria' => 'Alimentação', 'valor' => 417.50],
+            ['data' => $agora->copy()->startOfMonth()->addDays(5), 'descricao' => 'Site para cliente', 'categoria' => 'Freelance',   'valor' => 700.00],
+            ['data' => $agora->copy()->startOfMonth()->addDays(4), 'descricao' => 'Ônibus (recarga)',  'categoria' => 'Transporte',  'valor' => 220.00],
+            ['data' => $agora->copy()->startOfMonth()->addDays(2), 'descricao' => 'Cinema e lanche',   'categoria' => 'Lazer',       'valor' => 310.00],
+            ['data' => $agora->copy()->startOfMonth()->addDays(1), 'descricao' => 'Papelaria',         'categoria' => 'Outros',      'valor' => 90.00],
         ];
 
         // Histórico de meses anteriores para o gráfico comparativo
@@ -50,14 +50,12 @@ class DatabaseSeeder extends Seeder
                 'data' => $mesPassado->copy()->addDays(4),
                 'descricao' => 'Estágio',
                 'categoria' => 'Salário',
-                'tipo' => 'receita',
                 'valor' => 1800 + ($i * 100),
             ];
             $lancamentos[] = [
                 'data' => $mesPassado->copy()->addDays(10),
                 'descricao' => 'Despesas gerais',
                 'categoria' => 'Alimentação',
-                'tipo' => 'despesa',
                 'valor' => 1500 + ($i * 90),
             ];
         }
@@ -66,7 +64,6 @@ class DatabaseSeeder extends Seeder
             Transacao::create([
                 'user_id' => $user->id,
                 'categoria_id' => $cats[$item['categoria']],
-                'tipo' => $item['tipo'],
                 'descricao' => $item['descricao'],
                 'valor' => $item['valor'],
                 'data' => $item['data']->toDateString(),

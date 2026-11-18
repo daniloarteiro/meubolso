@@ -190,12 +190,12 @@ erDiagram
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| DB-01 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Pending |
+| DB-01 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Verified |
 | DB-02 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Verified |
 | DB-03 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Verified |
-| TRX-01 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Pending |
-| TRX-02 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Implementing |
-| TRX-03 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Pending |
+| TRX-01 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Verified |
+| TRX-02 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Verified |
+| TRX-03 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Verified |
 | UI-01 | P1: Filtro Dinâmico no Modal de Transações e Validação de Orçamentos | Tasks | Pending |
 | ORC-01 | P1: Filtro Dinâmico no Modal de Transações e Validação de Orçamentos | Tasks | Verified |
 | ORC-02 | P1: Filtro Dinâmico no Modal de Transações e Validação de Orçamentos | Tasks | Verified |

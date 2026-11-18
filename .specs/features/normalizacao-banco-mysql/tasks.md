@@ -182,11 +182,11 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] `transacoes` não possui coluna `tipo` na migration e `Transacao` expõe `tipo` via accessor da categoria
-- [ ] `TransacaoController` filtra `tipo` via `categoria` e persiste transações sem `transacoes.tipo`; `DatabaseSeeder` cria lançamentos sem campo `tipo`
-- [ ] `tests/Feature/MeuBolsoTest.php` verifica ausência da coluna `transacoes.tipo`, criação/edição sem `tipo`, filtro por `tipo` via categoria, índices e constraint `categorias`
-- [ ] Gate check passes: `php artisan test`
-- [ ] Test count: >= 35 tests pass (no silent deletions)
+- [x] `transacoes` não possui coluna `tipo` na migration e `Transacao` expõe `tipo` via accessor da categoria
+- [x] `TransacaoController` filtra `tipo` via `categoria` e persiste transações sem `transacoes.tipo`; `DatabaseSeeder` cria lançamentos sem campo `tipo`
+- [x] `tests/Feature/MeuBolsoTest.php` verifica ausência da coluna `transacoes.tipo`, criação/edição sem `tipo`, filtro por `tipo` via categoria, índices e constraint `categorias`
+- [x] Gate check passes: `php artisan test`
+- [x] Test count: >= 35 tests pass (no silent deletions)
 
 **Tests**: feature
 **Gate**: full

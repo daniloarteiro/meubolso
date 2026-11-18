@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('categoria_id')->constrained('categorias')->restrictOnDelete();
-            $table->string('tipo', 20); // receita ou despesa
             $table->string('descricao', 150);
             $table->decimal('valor', 10, 2);
             $table->date('data');

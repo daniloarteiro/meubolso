@@ -12,7 +12,6 @@ class Transacao extends Model
     protected $fillable = [
         'user_id',
         'categoria_id',
-        'tipo',
         'descricao',
         'valor',
         'data',
@@ -34,5 +33,11 @@ class Transacao extends Model
     public function categoria(): BelongsTo
     {
         return $this->belongsTo(Categoria::class);
+    }
+
+    // Tipo derivado da categoria vinculada (fonte única da verdade)
+    public function getTipoAttribute(): ?string
+    {
+        return $this->categoria?->tipo;
     }
 }
