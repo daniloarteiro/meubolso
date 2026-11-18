@@ -32,6 +32,30 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: tests/Feature/MeuBolsoTest.php:83-87 (C6) (tests,controllers)
 - last seen: 2026-11-18T05:58:54Z
 
+### L-004 - Seed more items than a query LIMIT and assert exact item order including tie-breakers
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `tests,controllers` · harmful: 0
+- features: consultas-sql-controllers
+- evidence: tests/Feature/ConsultasSqlTest.php:16-81 (C1) (tests,controllers)
+- last seen: 2026-11-18T06:36:39Z
+
+### L-005 - Assert every query output passed to a view including out-of-range and cross-user exclusions
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `tests,controllers` · harmful: 0
+- features: consultas-sql-controllers
+- evidence: tests/Feature/ConsultasSqlTest.php:96-161 (C3) (tests,controllers)
+- last seen: 2026-11-18T06:36:39Z
+
+### L-006 - Include same-key rows in ordering tests to exercise secondary tie-breaker columns
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `tests,controllers` · harmful: 0
+- features: consultas-sql-controllers
+- evidence: tests/Feature/ConsultasSqlTest.php:203-252 (C5) (tests,controllers)
+- last seen: 2026-11-18T06:36:39Z
+
+### L-007 - Guard query string inputs with is_string before regex or SQL binding and parse Y-m with !Y-m
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `controllers,views` · harmful: 0
+- features: consultas-sql-controllers
+- evidence: RelatorioController.php:38, OrcamentoController.php:22, TransacaoController.php:17 (controllers,views)
+- last seen: 2026-11-18T06:36:40Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

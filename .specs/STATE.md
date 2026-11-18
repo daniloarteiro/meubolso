@@ -12,11 +12,11 @@
 
 ## Handoff
 
-- **Feature**: .specs/features/normalizacao-banco-mysql
-- **Phase / Task**: Done (T1–T10 concluídas, Verifier auditou e achados fechados)
-- **Completed**: T1, T2, T3, T4, T5, T6, T7, T8, T9, T10
+- **Feature**: .specs/features/consultas-sql-controllers
+- **Phase / Task**: Done (T1–T4 concluídas, Verifier auditou e achados fechados)
+- **Completed**: T1, T2, T3, T4
 - **In-progress**: none
-- **Next step**: Testar no navegador (`php artisan serve`) se desejar e definir próxima feature ou push
+- **Next step**: Testar no navegador (`php artisan serve`) ou iniciar próxima feature
 - **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: master

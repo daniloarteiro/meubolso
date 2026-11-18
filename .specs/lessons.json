@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 4,
+  "next_id": 8,
   "lessons": [
     {
       "id": "L-001",
@@ -58,6 +58,78 @@
       ],
       "created": "2026-11-18T05:58:54Z",
       "last_seen": "2026-11-18T05:58:54Z"
+    },
+    {
+      "id": "L-004",
+      "key": "weak_test::seed more items than a query limit and assert exact item order including tie breakers",
+      "text": "Seed more items than a query LIMIT and assert exact item order including tie-breakers",
+      "signal": "weak_test",
+      "scope": "tests,controllers",
+      "status": "candidate",
+      "features": [
+        "consultas-sql-controllers"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "tests/Feature/ConsultasSqlTest.php:16-81 (C1) (tests,controllers)"
+      ],
+      "created": "2026-11-18T06:36:39Z",
+      "last_seen": "2026-11-18T06:36:39Z"
+    },
+    {
+      "id": "L-005",
+      "key": "weak_test::assert every query output passed to a view including out of range and cross user exclusions",
+      "text": "Assert every query output passed to a view including out-of-range and cross-user exclusions",
+      "signal": "weak_test",
+      "scope": "tests,controllers",
+      "status": "candidate",
+      "features": [
+        "consultas-sql-controllers"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "tests/Feature/ConsultasSqlTest.php:96-161 (C3) (tests,controllers)"
+      ],
+      "created": "2026-11-18T06:36:39Z",
+      "last_seen": "2026-11-18T06:36:39Z"
+    },
+    {
+      "id": "L-006",
+      "key": "weak_test::include same key rows in ordering tests to exercise secondary tie breaker columns",
+      "text": "Include same-key rows in ordering tests to exercise secondary tie-breaker columns",
+      "signal": "weak_test",
+      "scope": "tests,controllers",
+      "status": "candidate",
+      "features": [
+        "consultas-sql-controllers"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "tests/Feature/ConsultasSqlTest.php:203-252 (C5) (tests,controllers)"
+      ],
+      "created": "2026-11-18T06:36:39Z",
+      "last_seen": "2026-11-18T06:36:39Z"
+    },
+    {
+      "id": "L-007",
+      "key": "ac_gap::guard query string inputs with is string before regex or sql binding and parse y m with y m",
+      "text": "Guard query string inputs with is_string before regex or SQL binding and parse Y-m with !Y-m",
+      "signal": "ac_gap",
+      "scope": "controllers,views",
+      "status": "candidate",
+      "features": [
+        "consultas-sql-controllers"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "RelatorioController.php:38, OrcamentoController.php:22, TransacaoController.php:17 (controllers,views)"
+      ],
+      "created": "2026-11-18T06:36:40Z",
+      "last_seen": "2026-11-18T06:36:40Z"
     }
   ]
 }
