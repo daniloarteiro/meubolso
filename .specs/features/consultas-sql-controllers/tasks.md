@@ -84,11 +84,11 @@ T1 → T2 → T3 → T4
 
 **Done when**:
 
-- [ ] `RelatorioController@montarDados` executa apenas `DB::select` com placeholders `?` e `user_id = ?` nas leituras
-- [ ] `resources/views/relatorios/pdf.blade.php` renderiza lançamentos do mês com data `d/m/Y`, categoria e tipo
-- [ ] `tests/Feature/ConsultasSqlTest.php` valida totais `float`, percentuais, estado vazio (sem divisão por zero), isolamento e PDF no `/relatorios`
-- [ ] Gate check passes: `php artisan test`
-- [ ] Test count: >= 41 tests pass (no silent deletions)
+- [x] `RelatorioController@montarDados` executa apenas `DB::select` com placeholders `?` e `user_id = ?` nas leituras
+- [x] `resources/views/relatorios/pdf.blade.php` renderiza lançamentos do mês com data `d/m/Y`, categoria e tipo
+- [x] `tests/Feature/ConsultasSqlTest.php` valida totais `float`, percentuais, estado vazio (sem divisão por zero), isolamento e PDF no `/relatorios`
+- [x] Gate check passes: `php artisan test`
+- [x] Test count: >= 41 tests pass (no silent deletions)
 
 **Tests**: feature
 **Gate**: full

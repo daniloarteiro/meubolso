@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RelatorioController extends Controller
 {
@@ -38,31 +39,39 @@ class RelatorioController extends Controller
         $inicio = $dataBase->copy()->startOfMonth()->toDateString();
         $fim = $dataBase->copy()->endOfMonth()->toDateString();
 
-        $receitas = (float) $user->transacoes()
-            ->whereHas('categoria', fn ($q) => $q->where('tipo', 'receita'))
-            ->whereBetween('data', [$inicio, $fim])
-            ->sum('valor');
+        // Totais de receitas e despesas do mês selecionado
+        $totais = DB::select("
+            SELECT
+                COALESCE(SUM(CASE WHEN c.tipo = 'receita' THEN t.valor ELSE 0 END), 0) AS receitas,
+                COALESCE(SUM(CASE WHEN c.tipo = 'despesa' THEN t.valor ELSE 0 END), 0) AS despesas
+            FROM transacoes t
+            INNER JOIN categorias c ON c.id = t.categoria_id
+            WHERE t.user_id = ?
+              AND DATE(t.data) BETWEEN ? AND ?
+        ", [$user->id, $inicio, $fim])[0];
 
-        $despesas = (float) $user->transacoes()
-            ->whereHas('categoria', fn ($q) => $q->where('tipo', 'despesa'))
-            ->whereBetween('data', [$inicio, $fim])
-            ->sum('valor');
-
+        $receitas = (float) $totais->receitas;
+        $despesas = (float) $totais->despesas;
         $saldo = $receitas - $despesas;
 
-        $gastosPorCat = $user->transacoes()
-            ->whereHas('categoria', fn ($q) => $q->where('tipo', 'despesa'))
-            ->whereBetween('data', [$inicio, $fim])
-            ->selectRaw('categoria_id, SUM(valor) as total')
-            ->groupBy('categoria_id')
-            ->pluck('total', 'categoria_id');
+        // Despesas agrupadas por categoria com percentual
+        $categoriasRows = DB::select("
+            SELECT
+                c.nome,
+                SUM(t.valor) AS gasto
+            FROM transacoes t
+            INNER JOIN categorias c ON c.id = t.categoria_id
+            WHERE t.user_id = ?
+              AND c.tipo = 'despesa'
+              AND DATE(t.data) BETWEEN ? AND ?
+            GROUP BY c.id, c.nome
+            HAVING SUM(t.valor) > 0
+            ORDER BY gasto DESC, c.nome ASC
+        ", [$user->id, $inicio, $fim]);
 
-        $categorias = $user->categorias()
-            ->where('tipo', 'despesa')
-            ->orderBy('nome')
-            ->get()
-            ->map(function ($cat) use ($gastosPorCat, $despesas) {
-                $gasto = (float) ($gastosPorCat[$cat->id] ?? 0);
+        $categorias = collect($categoriasRows)
+            ->map(function ($cat) use ($despesas) {
+                $gasto = (float) $cat->gasto;
                 $percentual = $despesas > 0 ? round(($gasto / $despesas) * 100) : 0;
 
                 return [
@@ -71,16 +80,23 @@ class RelatorioController extends Controller
                     'percentual' => $percentual,
                 ];
             })
-            ->filter(fn ($c) => $c['gasto'] > 0)
-            ->sortByDesc('gasto')
             ->values();
 
-        $transacoes = $user->transacoes()
-            ->with('categoria')
-            ->whereBetween('data', [$inicio, $fim])
-            ->orderByDesc('data')
-            ->orderByDesc('id')
-            ->get();
+        // Lançamentos do mês para exibição no PDF
+        $transacoes = DB::select("
+            SELECT
+                t.id,
+                t.data,
+                t.descricao,
+                t.valor,
+                c.nome AS categoria_nome,
+                c.tipo
+            FROM transacoes t
+            INNER JOIN categorias c ON c.id = t.categoria_id
+            WHERE t.user_id = ?
+              AND DATE(t.data) BETWEEN ? AND ?
+            ORDER BY t.data DESC, t.id DESC
+        ", [$user->id, $inicio, $fim]);
 
         $nomesMeses = [
             1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março', 4 => 'Abril',

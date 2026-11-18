@@ -81,9 +81,9 @@
         <tbody>
             @forelse ($transacoes as $l)
                 <tr>
-                    <td>{{ $l->data->format('d/m/Y') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($l->data)->format('d/m/Y') }}</td>
                     <td>{{ $l->descricao }}</td>
-                    <td>{{ $l->categoria->nome }}</td>
+                    <td>{{ $l->categoria_nome }}</td>
                     <td class="direita {{ $l->tipo }}">
                         {{ $l->tipo == 'receita' ? '+' : '-' }} R$ {{ number_format($l->valor, 2, ',', '.') }}
                     </td>

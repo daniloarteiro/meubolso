@@ -93,7 +93,7 @@ Explicitly excluded. Documented to prevent scope creep.
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
 | SQL-01 | P1: Consultas SQL Explícitas no Painel e Relatórios | Tasks | Verified |
-| SQL-02 | P1: Consultas SQL Explícitas no Painel e Relatórios | Tasks | Pending |
+| SQL-02 | P1: Consultas SQL Explícitas no Painel e Relatórios | Tasks | Verified |
 | SQL-03 | P1: Consultas SQL Explícitas em Transações e Orçamentos | Tasks | Pending |
 | SQL-04 | P1: Consultas SQL Explícitas em Transações e Orçamentos | Tasks | Pending |
 
