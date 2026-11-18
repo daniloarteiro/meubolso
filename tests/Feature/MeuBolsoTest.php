@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Mail\ConfirmarCadastroMail;
 use App\Models\Categoria;
 use App\Models\Orcamento;
 use App\Models\Transacao;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -25,16 +27,99 @@ class MeuBolsoTest extends TestCase
 
     public function test_cadastro_cria_categorias_padrao(): void
     {
+        Mail::fake();
+
         $this->post('/register', [
             'name' => 'Maria Silva',
-            'email' => 'maria@exemplo.com',
+            'email' => 'maria.silva@gmail.com',
             'password' => '12345678',
             'password_confirmation' => '12345678',
-        ])->assertRedirect(route('painel.index', absolute: false));
+        ])->assertRedirect(route('cadastro.aguardando', absolute: false));
 
-        $user = User::where('email', 'maria@exemplo.com')->first();
+        // Antes de clicar no link, nada é gravado no banco
+        $this->assertDatabaseMissing('users', ['email' => 'maria.silva@gmail.com']);
+
+        // Permite reenviar link antes da confirmação
+        $this->post(route('cadastro.reenviar'))
+            ->assertSessionHas('status', 'verification-link-sent');
+
+        $urlConfirmacao = null;
+        Mail::assertSent(ConfirmarCadastroMail::class, function (ConfirmarCadastroMail $mail) use (&$urlConfirmacao) {
+            $urlConfirmacao = $mail->urlConfirmacao;
+
+            return $mail->hasTo('maria.silva@gmail.com');
+        });
+
+        // Token adulterado não cria usuário
+        $this->get($urlConfirmacao.'x')->assertForbidden();
+        $this->assertDatabaseMissing('users', ['email' => 'maria.silva@gmail.com']);
+
+        // Após confirmar no link, usuário e categorias padrão são criados
+        $this->get($urlConfirmacao)->assertRedirect(route('painel.index', absolute: false));
+
+        $user = User::where('email', 'maria.silva@gmail.com')->first();
         $this->assertNotNull($user);
+        $this->assertNotNull($user->email_verified_at);
         $this->assertTrue($user->categorias()->count() >= 5);
+
+        // Usuário com e-mail pendente de verificação (ex.: após trocar no perfil) é bloqueado nas rotas financeiras
+        $naoVerificado = User::factory()->unverified()->create();
+        $this->actingAs($naoVerificado)->get('/painel')->assertRedirect(route('verification.notice'));
+        $this->actingAs($naoVerificado)->get('/transacoes')->assertRedirect(route('verification.notice'));
+        $this->actingAs($naoVerificado)->get('/orcamentos')->assertRedirect(route('verification.notice'));
+        $this->actingAs($naoVerificado)->get('/relatorios')->assertRedirect(route('verification.notice'));
+    }
+
+    public function test_cadastro_rejeita_email_invalido_ou_dominio_inexistente(): void
+    {
+        $this->from('/register')->post('/register', [
+            'name' => 'Teste Invalido',
+            'email' => 'naoexiste@dominio-inexistente-meubolso-99999.com',
+            'password' => '12345678',
+            'password_confirmation' => '12345678',
+        ])->assertSessionHasErrors('email');
+
+        $this->from('/register')->post('/register', [
+            'name' => 'Teste Sem Tld',
+            'email' => 'alguem@abc',
+            'password' => '12345678',
+            'password_confirmation' => '12345678',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertDatabaseMissing('users', ['email' => 'naoexiste@dominio-inexistente-meubolso-99999.com']);
+        $this->assertDatabaseMissing('users', ['email' => 'alguem@abc']);
+    }
+
+    public function test_perfil_rejeita_email_com_dominio_inexistente(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->from('/profile')->patch('/profile', [
+            'name' => $user->name,
+            'email' => 'novo@dominio-inexistente-meubolso-99999.com',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertNotSame('novo@dominio-inexistente-meubolso-99999.com', $user->fresh()->email);
+    }
+
+    public function test_mensagens_de_validacao_aparecem_traduzidas_em_portugues(): void
+    {
+        app()->setLocale('pt_BR');
+
+        $response = $this->from('/cadastro')->post('/register', [
+            'name' => 'Arteiro',
+            'email' => 'testeteste@gmail.com',
+            'password' => '123',
+            'password_confirmation' => '456',
+        ]);
+
+        $response->assertRedirect('/cadastro');
+        $response->assertSessionHasErrors('password');
+
+        $erros = session('errors')->get('password');
+        $this->assertNotEmpty($erros);
+        $this->assertStringNotContainsString('validation.', implode(' ', $erros));
+        $this->assertStringContainsString('8 caracteres', implode(' ', $erros));
     }
 
     public function test_usuario_pode_criar_editar_filtrar_e_excluir_transacao(): void
