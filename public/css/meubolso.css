@@ -1,0 +1,26 @@
+/* Cores do MeuBolso: mude aqui e o sistema inteiro acompanha */
+:root {
+  --verde: #15803d;
+  --verde-escuro: #14532d;
+  --vermelho: #dc2626;
+  --fundo: #f4f7f4;
+  --bs-primary: #15803d;
+  --bs-primary-rgb: 21, 128, 61;
+  --bs-link-color: #15803d;
+  --bs-link-hover-color: #14532d;
+}
+body { background: var(--fundo); }
+.navbar-meubolso { background: var(--verde-escuro); }
+.btn-primary {
+  --bs-btn-bg: var(--verde);
+  --bs-btn-border-color: var(--verde);
+  --bs-btn-hover-bg: var(--verde-escuro);
+  --bs-btn-hover-border-color: var(--verde-escuro);
+  --bs-btn-active-bg: var(--verde-escuro);
+  --bs-btn-active-border-color: var(--verde-escuro);
+}
+.card { border: 0; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); }
+.receita { color: var(--verde); }
+.despesa { color: var(--vermelho); }
+.valor-grande { font-size: 1.6rem; font-weight: 600; }
+.auth-box { max-width: 420px; margin: 8vh auto; }
