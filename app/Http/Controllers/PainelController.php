@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PainelController extends Controller
 {
@@ -14,44 +14,60 @@ class PainelController extends Controller
         $inicioMes = $agora->copy()->startOfMonth()->toDateString();
         $fimMes = $agora->copy()->endOfMonth()->toDateString();
 
-        $receitas = (float) $user->transacoes()
-            ->whereHas('categoria', fn ($q) => $q->where('tipo', 'receita'))
-            ->whereBetween('data', [$inicioMes, $fimMes])
-            ->sum('valor');
+        // Totais de receitas e despesas do mês atual
+        $totais = DB::select("
+            SELECT
+                COALESCE(SUM(CASE WHEN c.tipo = 'receita' THEN t.valor ELSE 0 END), 0) AS receitas,
+                COALESCE(SUM(CASE WHEN c.tipo = 'despesa' THEN t.valor ELSE 0 END), 0) AS despesas
+            FROM transacoes t
+            INNER JOIN categorias c ON c.id = t.categoria_id
+            WHERE t.user_id = ?
+              AND DATE(t.data) BETWEEN ? AND ?
+        ", [$user->id, $inicioMes, $fimMes])[0];
 
-        $despesas = (float) $user->transacoes()
-            ->whereHas('categoria', fn ($q) => $q->where('tipo', 'despesa'))
-            ->whereBetween('data', [$inicioMes, $fimMes])
-            ->sum('valor');
-
+        $receitas = (float) $totais->receitas;
+        $despesas = (float) $totais->despesas;
         $saldo = $receitas - $despesas;
 
-        $transacoes = $user->transacoes()
-            ->with('categoria')
-            ->orderByDesc('data')
-            ->orderByDesc('id')
-            ->limit(5)
-            ->get();
+        // Últimas 5 transações do usuário
+        $transacoes = DB::select("
+            SELECT
+                t.id,
+                t.data,
+                t.descricao,
+                t.valor,
+                c.nome AS categoria_nome,
+                c.tipo
+            FROM transacoes t
+            INNER JOIN categorias c ON c.id = t.categoria_id
+            WHERE t.user_id = ?
+            ORDER BY t.data DESC, t.id DESC
+            LIMIT 5
+        ", [$user->id]);
 
         // Gastos do mês agrupados por categoria para o gráfico de rosca
-        $gastosPorCat = $user->transacoes()
-            ->whereHas('categoria', fn ($q) => $q->where('tipo', 'despesa'))
-            ->whereBetween('data', [$inicioMes, $fimMes])
-            ->selectRaw('categoria_id, SUM(valor) as total')
-            ->groupBy('categoria_id')
-            ->pluck('total', 'categoria_id');
+        $categoriasRows = DB::select("
+            SELECT
+                c.nome,
+                c.cor,
+                COALESCE(SUM(t.valor), 0) AS gasto
+            FROM categorias c
+            LEFT JOIN transacoes t
+                ON t.categoria_id = c.id
+               AND t.user_id = c.user_id
+               AND DATE(t.data) BETWEEN ? AND ?
+            WHERE c.user_id = ?
+              AND c.tipo = 'despesa'
+            GROUP BY c.id, c.nome, c.cor
+            ORDER BY c.nome ASC
+        ", [$inicioMes, $fimMes, $user->id]);
 
-        $categorias = $user->categorias()
-            ->where('tipo', 'despesa')
-            ->orderBy('nome')
-            ->get()
-            ->map(function ($cat) use ($gastosPorCat) {
-                return [
-                    'nome' => $cat->nome,
-                    'cor' => $cat->cor,
-                    'gasto' => (float) ($gastosPorCat[$cat->id] ?? 0),
-                ];
-            })
+        $categorias = collect($categoriasRows)
+            ->map(fn ($cat) => [
+                'nome' => $cat->nome,
+                'cor' => $cat->cor,
+                'gasto' => (float) $cat->gasto,
+            ])
             ->values();
 
         // Histórico dos últimos 6 meses para o gráfico de barras
@@ -67,16 +83,20 @@ class PainelController extends Controller
             $ini = $dataMes->copy()->startOfMonth()->toDateString();
             $fim = $dataMes->copy()->endOfMonth()->toDateString();
 
+            $rowMes = DB::select("
+                SELECT
+                    COALESCE(SUM(CASE WHEN c.tipo = 'receita' THEN t.valor ELSE 0 END), 0) AS receitas,
+                    COALESCE(SUM(CASE WHEN c.tipo = 'despesa' THEN t.valor ELSE 0 END), 0) AS despesas
+                FROM transacoes t
+                INNER JOIN categorias c ON c.id = t.categoria_id
+                WHERE t.user_id = ?
+                  AND DATE(t.data) BETWEEN ? AND ?
+            ", [$user->id, $ini, $fim])[0];
+
             $meses[] = [
                 'label' => $siglasMeses[$dataMes->month],
-                'receitas' => (float) $user->transacoes()
-                    ->whereHas('categoria', fn ($q) => $q->where('tipo', 'receita'))
-                    ->whereBetween('data', [$ini, $fim])
-                    ->sum('valor'),
-                'despesas' => (float) $user->transacoes()
-                    ->whereHas('categoria', fn ($q) => $q->where('tipo', 'despesa'))
-                    ->whereBetween('data', [$ini, $fim])
-                    ->sum('valor'),
+                'receitas' => (float) $rowMes->receitas,
+                'despesas' => (float) $rowMes->despesas,
             ];
         }
 
