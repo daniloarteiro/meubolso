@@ -319,10 +319,10 @@ Proof: run feature | ✔ Orcamento rejeita categoria de receita
 Proof: run feature | ✔ Excluir orcamento preserva transacoes da categoria
 
 **C12** - `.env` aponta `DB_CONNECTION=mysql`, `DB_HOST=127.0.0.1`, `DB_PORT=3306`, `DB_DATABASE=meubolso` (ENV-01, AC 1)
-Proof: `php -r "require 'vendor/autoload.php'; Dotenv\Dotenv::createImmutable('.')->load(); exit(($_ENV['DB_CONNECTION']==='mysql' && $_ENV['DB_HOST']==='127.0.0.1' && $_ENV['DB_PORT']==='3306' && $_ENV['DB_DATABASE']==='meubolso') ? 0 : 1);"`
+Proof: `php -r 'require "vendor/autoload.php"; Dotenv\Dotenv::createImmutable(".")->load(); exit(($_ENV["DB_CONNECTION"]==="mysql" && $_ENV["DB_HOST"]==="127.0.0.1" && $_ENV["DB_PORT"]==="3306" && $_ENV["DB_DATABASE"]==="meubolso") ? 0 : 1);'`
 
 **C13** - `.env.example` documenta variáveis MySQL para `meubolso` sem segredos reais (ENV-01, AC 2)
-Proof: `php -r "$c=file_get_contents('.env.example'); exit((str_contains($c,'DB_CONNECTION=mysql') && str_contains($c,'DB_DATABASE=meubolso') && preg_match('/^DB_PASSWORD=\s*$/m',$c)) ? 0 : 1);"`
+Proof: `php -r '$c=file_get_contents(".env.example"); exit((str_contains($c,"DB_CONNECTION=mysql") && str_contains($c,"DB_DATABASE=meubolso") && preg_match("/^DB_PASSWORD=\s*$/m",$c)) ? 0 : 1);'`
 
 **C14** - `php artisan migrate --seed` cria todas as tabelas no MySQL `meubolso` e semeia `danilo@meubolso.com` com 7 categorias, transações e orçamentos (ENV-02, AC 3)
 Proof: `php artisan migrate:fresh --seed --no-interaction`
