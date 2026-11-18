@@ -145,13 +145,13 @@ T1 → T2 → T3 → T4
 ## Checks
 
 **C1** - `PainelController@index` calcula totais do mês, gráfico de rosca, série de 6 meses e últimas 5 transações via `DB::select` parametrizado isolado por usuário (SQL-01, AC 1, AC 3)
-Proof: run sql | ✔ Painel usa DB select parametrizado e isola usuarios
+Proof: run sql | ✔ Painel usa db select parametrizado e isola usuarios
 
 **C2** - `PainelController` retorna `0.0` em todos os totais quando o usuário não possui transações no mês (SQL-01, Edge Case)
 Proof: run sql | ✔ Painel retorna zeros em estado vazio
 
 **C3** - `RelatorioController` calcula totais, percentuais por categoria e lançamentos do mês via `DB::select` parametrizado e gera PDF (SQL-02, AC 2, AC 3)
-Proof: run sql | ✔ Relatorio e pdf usam DB select parametrizado e isolam usuarios
+Proof: run sql | ✔ Relatorio e pdf usam db select parametrizado e isolam usuarios
 
 **C4** - `RelatorioController` retorna `0.0` e lista vazia sem erro de divisão por zero quando não há transações no mês (SQL-02, Edge Case)
 Proof: run sql | ✔ Relatorio trata mes vazio sem divisao por zero
@@ -163,7 +163,7 @@ Proof: run sql | ✔ Transacoes index filtra por periodo tipo categoria e isola 
 Proof: run sql | ✔ Transacoes index neutraliza payload de sql injection nos filtros
 
 **C7** - `OrcamentoController@index` lista todas as categorias `despesa` do usuário com `gasto` (`float`) e `limite` (`float|null`) via `DB::select` parametrizado e isolado por usuário (SQL-04, AC 2, AC 4)
-Proof: run sql | ✔ Orcamentos index usa DB select parametrizado e isola usuarios
+Proof: run sql | ✔ Orcamentos index usa db select parametrizado e isola usuarios
 
 **C8** - Usuário sem transações e sem metas no mês recebe `gasto = 0.0` e `limite = null` em todas as categorias `despesa` em `/orcamentos` (SQL-04, Edge Case)
 Proof: run sql | ✔ Orcamentos index retorna gasto zero e limite nulo quando vazio
