@@ -197,8 +197,8 @@ erDiagram
 | TRX-02 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Implementing |
 | TRX-03 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Pending |
 | UI-01 | P1: Filtro Dinâmico no Modal de Transações e Validação de Orçamentos | Tasks | Pending |
-| ORC-01 | P1: Filtro Dinâmico no Modal de Transações e Validação de Orçamentos | Tasks | Pending |
-| ORC-02 | P1: Filtro Dinâmico no Modal de Transações e Validação de Orçamentos | Tasks | Pending |
+| ORC-01 | P1: Filtro Dinâmico no Modal de Transações e Validação de Orçamentos | Tasks | Verified |
+| ORC-02 | P1: Filtro Dinâmico no Modal de Transações e Validação de Orçamentos | Tasks | Verified |
 | ENV-01 | P1: Conexão MySQL, Carga Inicial e Verificação do Sistema | Tasks | Pending |
 | ENV-02 | P1: Conexão MySQL, Carga Inicial e Verificação do Sistema | Tasks | Pending |
 | NAV-01 | P2: Navegação para Meu Perfil | Tasks | Pending |

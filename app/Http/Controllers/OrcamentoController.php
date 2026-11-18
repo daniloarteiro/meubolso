@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Orcamento;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class OrcamentoController extends Controller
 {
@@ -21,7 +22,7 @@ class OrcamentoController extends Controller
         $fim = Carbon::createFromFormat('Y-m', $mes)->endOfMonth()->toDateString();
 
         $gastosPorCat = $user->transacoes()
-            ->where('tipo', 'despesa')
+            ->whereHas('categoria', fn ($q) => $q->where('tipo', 'despesa'))
             ->whereBetween('data', [$inicio, $fim])
             ->selectRaw('categoria_id, SUM(valor) as total')
             ->groupBy('categoria_id')
@@ -61,6 +62,12 @@ class OrcamentoController extends Controller
 
         $mes = $dados['mes_referencia'] ?? now()->format('Y-m');
         $categoria = $request->user()->categorias()->findOrFail($dados['categoria_id']);
+
+        if ($categoria->tipo !== 'despesa') {
+            throw ValidationException::withMessages([
+                'categoria_id' => 'Orçamentos só podem ser definidos para categorias de despesa.',
+            ]);
+        }
 
         Orcamento::updateOrCreate(
             [

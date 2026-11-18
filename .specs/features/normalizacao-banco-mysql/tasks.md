@@ -160,10 +160,10 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] `OrcamentoController@store` rejeita categoria com `tipo !== 'despesa'` retornando erro de validação em `categoria_id` sem gravar no banco
-- [ ] Testes em `tests/Feature/MeuBolsoTest.php` cobrem rejeição de categoria de receita e preservação das transações após `DELETE /orcamentos/{orcamento}`
-- [ ] Gate check passes: `php artisan test`
-- [ ] Test count: >= 33 tests pass (no silent deletions)
+- [x] `OrcamentoController@store` rejeita categoria com `tipo !== 'despesa'` retornando erro de validação em `categoria_id` sem gravar no banco
+- [x] Testes em `tests/Feature/MeuBolsoTest.php` cobrem rejeição de categoria de receita e preservação das transações após `DELETE /orcamentos/{orcamento}`
+- [x] Gate check passes: `php artisan test`
+- [x] Test count: >= 33 tests pass (no silent deletions)
 
 **Tests**: feature
 **Gate**: full

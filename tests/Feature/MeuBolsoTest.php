@@ -195,4 +195,57 @@ class MeuBolsoTest extends TestCase
         $pdf->assertOk();
         $this->assertStringContainsString('application/pdf', $pdf->headers->get('content-type'));
     }
+
+    public function test_orcamento_rejeita_categoria_de_receita(): void
+    {
+        $user = User::factory()->create();
+        Categoria::criarPadraoPara($user);
+        $catSalario = $user->categorias()->where('nome', 'Salário')->first();
+        $mes = now()->format('Y-m');
+
+        $this->actingAs($user)
+            ->post(route('orcamentos.store'), [
+                'categoria_id' => $catSalario->id,
+                'limite' => 500,
+                'mes_referencia' => $mes,
+            ])
+            ->assertSessionHasErrors('categoria_id');
+
+        $this->assertDatabaseMissing('orcamentos', [
+            'user_id' => $user->id,
+            'categoria_id' => $catSalario->id,
+            'mes_referencia' => $mes,
+        ]);
+    }
+
+    public function test_excluir_orcamento_preserva_transacoes_da_categoria(): void
+    {
+        $user = User::factory()->create();
+        Categoria::criarPadraoPara($user);
+        $catAlimentacao = $user->categorias()->where('nome', 'Alimentação')->first();
+        $mes = now()->format('Y-m');
+
+        $orcamento = Orcamento::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catAlimentacao->id,
+            'mes_referencia' => $mes,
+            'limite' => 600,
+        ]);
+
+        $transacao = Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catAlimentacao->id,
+            'tipo' => 'despesa',
+            'descricao' => 'Supermercado',
+            'valor' => 100,
+            'data' => now()->format('Y-m-d'),
+        ]);
+
+        $this->actingAs($user)
+            ->delete(route('orcamentos.destroy', $orcamento))
+            ->assertRedirect(route('orcamentos.index', ['mes' => $mes]));
+
+        $this->assertDatabaseMissing('orcamentos', ['id' => $orcamento->id]);
+        $this->assertDatabaseHas('transacoes', ['id' => $transacao->id]);
+    }
 }
