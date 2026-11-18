@@ -109,7 +109,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label" for="m_tipo">Tipo</label>
-                        <select class="form-select" id="m_tipo" name="tipo" required>
+                        <select class="form-select" id="m_tipo" required>
                             <option value="despesa">Despesa</option>
                             <option value="receita">Receita</option>
                         </select>
@@ -132,7 +132,7 @@
                         <label class="form-label" for="m_categoria">Categoria</label>
                         <select class="form-select" id="m_categoria" name="categoria_id" required>
                             @foreach ($categorias as $c)
-                                <option value="{{ $c->id }}">{{ $c->nome }}</option>
+                                <option value="{{ $c->id }}" data-tipo="{{ $c->tipo }}">{{ $c->nome }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -158,7 +158,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label" for="e_tipo">Tipo</label>
-                        <select class="form-select" id="e_tipo" name="tipo" required>
+                        <select class="form-select" id="e_tipo" required>
                             <option value="despesa">Despesa</option>
                             <option value="receita">Receita</option>
                         </select>
@@ -181,7 +181,7 @@
                         <label class="form-label" for="e_categoria">Categoria</label>
                         <select class="form-select" id="e_categoria" name="categoria_id" required>
                             @foreach ($categorias as $c)
-                                <option value="{{ $c->id }}">{{ $c->nome }}</option>
+                                <option value="{{ $c->id }}" data-tipo="{{ $c->tipo }}">{{ $c->nome }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -197,14 +197,44 @@
 
 @push('scripts')
 <script>
+    function filtrarCategoriasPorTipo(selectTipo, selectCategoria, valorPreferido = null) {
+        const tipo = selectTipo.value;
+        let primeiraVisivel = null;
+
+        Array.from(selectCategoria.options).forEach(opt => {
+            const compativel = opt.dataset.tipo === tipo;
+            opt.hidden = !compativel;
+            opt.disabled = !compativel;
+
+            if (compativel && !primeiraVisivel) {
+                primeiraVisivel = opt.value;
+            }
+        });
+
+        if (valorPreferido && Array.from(selectCategoria.options).some(opt => opt.value === String(valorPreferido) && !opt.disabled)) {
+            selectCategoria.value = String(valorPreferido);
+        } else if (primeiraVisivel) {
+            selectCategoria.value = primeiraVisivel;
+        }
+    }
+
+    const mTipo = document.getElementById('m_tipo');
+    const mCategoria = document.getElementById('m_categoria');
+    const eTipo = document.getElementById('e_tipo');
+    const eCategoria = document.getElementById('e_categoria');
+
+    filtrarCategoriasPorTipo(mTipo, mCategoria);
+    mTipo.addEventListener('change', () => filtrarCategoriasPorTipo(mTipo, mCategoria));
+    eTipo.addEventListener('change', () => filtrarCategoriasPorTipo(eTipo, eCategoria));
+
     document.querySelectorAll('.btn-editar').forEach(btn => {
         btn.addEventListener('click', () => {
             document.getElementById('formEditar').action = btn.dataset.url;
-            document.getElementById('e_tipo').value = btn.dataset.tipo;
+            eTipo.value = btn.dataset.tipo;
             document.getElementById('e_descricao').value = btn.dataset.descricao;
             document.getElementById('e_valor').value = btn.dataset.valor;
             document.getElementById('e_data').value = btn.dataset.data;
-            document.getElementById('e_categoria').value = btn.dataset.categoria;
+            filtrarCategoriasPorTipo(eTipo, eCategoria, btn.dataset.categoria);
         });
     });
 </script>

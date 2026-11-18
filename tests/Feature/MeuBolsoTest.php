@@ -296,4 +296,25 @@ class MeuBolsoTest extends TestCase
         $this->expectException(QueryException::class);
         $cat->delete();
     }
+
+    public function test_modal_de_transacoes_renderiza_atributos_para_filtro_por_tipo(): void
+    {
+        $user = User::factory()->create();
+        Categoria::criarPadraoPara($user);
+        $catSalario = $user->categorias()->where('nome', 'Salário')->first();
+
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catSalario->id,
+            'descricao' => 'Salário mensal',
+            'valor' => 2000,
+            'data' => now()->format('Y-m-d'),
+        ]);
+
+        $response = $this->actingAs($user)->get(route('transacoes.index'));
+        $response->assertOk()
+            ->assertSee('data-tipo="despesa"', false)
+            ->assertSee('data-tipo="receita"', false)
+            ->assertSee('data-categoria="'.$catSalario->id.'"', false);
+    }
 }

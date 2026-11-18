@@ -205,11 +205,11 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] Modal de criação inicia exibindo apenas categorias compatíveis com o `Tipo` selecionado e alterna opções ao mudar entre `despesa` e `receita`
-- [ ] Modal de edição pré-seleciona `Tipo` igual a `transacao.categoria.tipo`, filtra opções compatíveis e mantém a `categoria_id` da transação selecionada
-- [ ] Teste em `tests/Feature/MeuBolsoTest.php` valida atributos `data-tipo` e `data-categoria` renderizados no HTML de `/transacoes`
-- [ ] Gate check passes: `php artisan test`
-- [ ] Test count: >= 36 tests pass (no silent deletions)
+- [x] Modal de criação inicia exibindo apenas categorias compatíveis com o `Tipo` selecionado e alterna opções ao mudar entre `despesa` e `receita`
+- [x] Modal de edição pré-seleciona `Tipo` igual a `transacao.categoria.tipo`, filtra opções compatíveis e mantém a `categoria_id` da transação selecionada
+- [x] Teste em `tests/Feature/MeuBolsoTest.php` valida atributos `data-tipo` e `data-categoria` renderizados no HTML de `/transacoes`
+- [x] Gate check passes: `php artisan test`
+- [x] Test count: >= 36 tests pass (no silent deletions)
 
 **Tests**: feature
 **Gate**: full
