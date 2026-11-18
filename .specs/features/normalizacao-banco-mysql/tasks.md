@@ -250,9 +250,9 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] `.env.example` contém `DB_CONNECTION=mysql`, `DB_HOST=127.0.0.1`, `DB_PORT=3306`, `DB_DATABASE=meubolso`, `DB_USERNAME=root`, `DB_PASSWORD=` sem segredos reais
-- [ ] Gate check passes: `php artisan test`
-- [ ] Test count: >= 37 tests pass (no silent deletions)
+- [x] `.env.example` contém `DB_CONNECTION=mysql`, `DB_HOST=127.0.0.1`, `DB_PORT=3306`, `DB_DATABASE=meubolso`, `DB_USERNAME=root`, `DB_PASSWORD=` sem segredos reais
+- [x] Gate check passes: `php artisan test`
+- [x] Test count: >= 37 tests pass (no silent deletions)
 
 **Tests**: none
 **Gate**: build
