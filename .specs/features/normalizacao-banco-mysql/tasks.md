@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: skipped - alteração direta no padrão MVC Laravel existente (decisão `AD-001` em `.specs/STATE.md`)
-**Status**: In Progress
+**Status**: Done
 **Approved**: 2026-11-18 - user: "ok vamos prosseguir então e usando a opção A eu te passo a senha na hora"
 **Build**: `php artisan test`
 **Run feature**: `php vendor/bin/phpunit --testdox tests/Feature/MeuBolsoTest.php`
@@ -340,7 +340,7 @@ Proof: run feature | ✔ Barra de navegacao exibe link para meu perfil
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** Na T10 usar Opção A: usuário informará a senha local do MySQL na hora para atualizar `.env` e rodar `php artisan migrate:fresh --seed`. Executando inline sem subagentes de batch.
-**Dispatched:** none
+**Dispatched:** Verifier (sub-agent `self`) at `HEAD` `d1c2415` -> returned (FAIL: 3 findings on C1, C5, C6)
 **Walked:** Login como `danilo@meubolso.com` / `12345678` contra MySQL `meubolso` em `http://127.0.0.1:8011`. `/painel` exibiu "Novembro de 2026", 5 últimas transações e link "Meu Perfil (Danilo)" -> `/profile` (200, "Dados da conta", "Alterar senha"). Em `/transacoes`: modal `+ Nova transação` iniciou em `despesa` com 5 opções (`Alimentação`, `Lazer`, `Mensalidade`, `Outros`, `Transporte`); ao mudar para `receita`, filtrou para `Freelance` e `Salário` com `Freelance` selecionado; `Editar` em receita e em despesa pré-selecionou `e_tipo` e `e_categoria` corretos (`6` e `3`). `/orcamentos` exibiu 5 metas; `/relatorios` e `/relatorios/pdf` retornaram 200 (`application/pdf`).
 
 ---

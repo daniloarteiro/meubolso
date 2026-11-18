@@ -86,6 +86,12 @@ class MeuBolsoTest extends TestCase
             ->assertSee('Estágio')
             ->assertDontSee('Café');
 
+        $this->actingAs($user)
+            ->get(route('transacoes.index', ['tipo' => 'despesa']))
+            ->assertOk()
+            ->assertSee('Café')
+            ->assertDontSee('Estágio');
+
         // Excluir
         $this->actingAs($user)
             ->delete(route('transacoes.destroy', $transacao))
@@ -189,12 +195,28 @@ class MeuBolsoTest extends TestCase
             ->assertViewHas('despesas', 250.0)
             ->assertViewHas('saldo', 1250.0);
 
+        $painelCats = collect($resPainel->viewData('categorias'))->keyBy('nome');
+        $this->assertEquals(250.0, $painelCats->get('Alimentação')['gasto']);
+        $this->assertFalse($painelCats->has('Salário'));
+
+        $ultimoMes = collect($resPainel->viewData('meses'))->last();
+        $this->assertEquals(1500.0, $ultimoMes['receitas']);
+        $this->assertEquals(250.0, $ultimoMes['despesas']);
+
         $mes = now()->format('Y-m');
+        $resOrcamento = $this->actingAs($user)->get(route('orcamentos.index', ['mes' => $mes]));
+        $resOrcamento->assertOk()->assertSee('250,00');
+        $orcCats = collect($resOrcamento->viewData('categorias'))->keyBy('nome');
+        $this->assertEquals(250.0, $orcCats->get('Alimentação')['gasto']);
+        $this->assertFalse($orcCats->has('Salário'));
+
         $resRelatorio = $this->actingAs($user)->get(route('relatorios.index', ['mes' => $mes]));
         $resRelatorio->assertOk()
             ->assertViewHas('receitas', 1500.0)
             ->assertViewHas('despesas', 250.0)
             ->assertViewHas('saldo', 1250.0);
+        $relCats = collect($resRelatorio->viewData('categorias'))->keyBy('nome');
+        $this->assertEquals(250.0, $relCats->get('Alimentação')['gasto']);
 
         $pdf = $this->actingAs($user)->get(route('relatorios.pdf', ['mes' => $mes]));
         $pdf->assertOk();
@@ -258,6 +280,15 @@ class MeuBolsoTest extends TestCase
         $this->assertFalse(Schema::hasColumn('transacoes', 'tipo'));
         $this->assertTrue(Schema::hasColumn('transacoes', 'categoria_id'));
 
+        $categoriaCol = collect(Schema::getColumns('transacoes'))->firstWhere('name', 'categoria_id');
+        $this->assertNotNull($categoriaCol);
+        $this->assertFalse($categoriaCol['nullable']);
+
+        $categoriaFk = collect(Schema::getForeignKeys('transacoes'))
+            ->first(fn ($fk) => $fk['columns'] === ['categoria_id'] && $fk['foreign_table'] === 'categorias');
+        $this->assertNotNull($categoriaFk);
+        $this->assertEquals('restrict', strtolower($categoriaFk['on_delete']));
+
         $orcamentoIndexes = collect(Schema::getIndexes('orcamentos'));
         $this->assertTrue(
             $orcamentoIndexes->contains(fn ($idx) => $idx['columns'] === ['user_id', 'mes_referencia']),
@@ -270,10 +301,39 @@ class MeuBolsoTest extends TestCase
 
         $user = User::factory()->create();
 
+        // Garante NOT NULL em categoria_id no banco
+        try {
+            Transacao::create([
+                'user_id' => $user->id,
+                'categoria_id' => null,
+                'descricao' => 'Sem categoria',
+                'valor' => 10,
+                'data' => now()->format('Y-m-d'),
+            ]);
+            $this->fail('Esperava QueryException ao inserir transação sem categoria_id.');
+        } catch (QueryException $e) {
+            $this->assertNotEmpty($e->getMessage());
+        }
+
         // Mesmo nome permitido em tipos distintos; duplicado no mesmo tipo bloqueado
         $catDespesa = Categoria::create(['user_id' => $user->id, 'nome' => 'Reembolso', 'tipo' => 'despesa', 'cor' => '#111111']);
         $catReceita = Categoria::create(['user_id' => $user->id, 'nome' => 'Reembolso', 'tipo' => 'receita', 'cor' => '#222222']);
         $this->assertNotEquals($catDespesa->id, $catReceita->id);
+
+        // Garante ON DELETE RESTRICT quando há transação vinculada
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catDespesa->id,
+            'descricao' => 'Compra teste',
+            'valor' => 25,
+            'data' => now()->format('Y-m-d'),
+        ]);
+        try {
+            $catDespesa->delete();
+            $this->fail('Esperava QueryException por ON DELETE RESTRICT.');
+        } catch (QueryException $e) {
+            $this->assertNotEmpty($e->getMessage());
+        }
 
         $this->expectException(QueryException::class);
         Categoria::create(['user_id' => $user->id, 'nome' => 'Reembolso', 'tipo' => 'despesa', 'cor' => '#333333']);
