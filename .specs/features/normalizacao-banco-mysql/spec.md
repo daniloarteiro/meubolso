@@ -192,7 +192,7 @@ erDiagram
 | -------------- | ----- | ----- | ------ |
 | DB-01 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Pending |
 | DB-02 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Verified |
-| DB-03 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Pending |
+| DB-03 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Verified |
 | TRX-01 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Pending |
 | TRX-02 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Pending |
 | TRX-03 | P1: Normalização do Schema e Integridade do Tipo via Categoria | Tasks | Pending |

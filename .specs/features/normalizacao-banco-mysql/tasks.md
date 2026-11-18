@@ -95,9 +95,9 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] Migration define `index(['user_id', 'mes_referencia'])` além da unique `(user_id, categoria_id, mes_referencia)`
-- [ ] Gate check passes: `php artisan test`
-- [ ] Test count: 30 tests pass (no silent deletions)
+- [x] Migration define `index(['user_id', 'mes_referencia'])` além da unique `(user_id, categoria_id, mes_referencia)`
+- [x] Gate check passes: `php artisan test`
+- [x] Test count: 30 tests pass (no silent deletions)
 
 **Tests**: none
 **Gate**: build

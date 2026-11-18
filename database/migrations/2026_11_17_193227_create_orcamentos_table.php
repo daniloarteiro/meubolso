@@ -17,6 +17,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['user_id', 'categoria_id', 'mes_referencia']);
+            $table->index(['user_id', 'mes_referencia']);
         });
     }
 
