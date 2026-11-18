@@ -58,13 +58,14 @@ class RelatorioController extends Controller
         $categoriasRows = DB::select("
             SELECT
                 c.nome,
+                c.cor,
                 SUM(t.valor) AS gasto
             FROM transacoes t
             INNER JOIN categorias c ON c.id = t.categoria_id
             WHERE t.user_id = ?
               AND c.tipo = 'despesa'
               AND DATE(t.data) BETWEEN ? AND ?
-            GROUP BY c.id, c.nome
+            GROUP BY c.id, c.nome, c.cor
             HAVING SUM(t.valor) > 0
             ORDER BY gasto DESC, c.nome ASC
         ", [$user->id, $inicio, $fim]);
@@ -76,6 +77,7 @@ class RelatorioController extends Controller
 
                 return [
                     'nome' => $cat->nome,
+                    'cor' => $cat->cor,
                     'gasto' => $gasto,
                     'percentual' => $percentual,
                 ];

@@ -1,3 +1,8 @@
+const formatarBRL = (valor) => new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+}).format(Number(valor) || 0);
+
 // Gráfico de gastos por categoria
 const categoriasComGasto = (dados.categorias || []).filter(c => Number(c.gasto) > 0);
 const canvasCategorias = document.getElementById('graficoCategorias');
@@ -11,11 +16,33 @@ if (canvasCategorias) {
                 data: categoriasComGasto.length ? categoriasComGasto.map(c => Number(c.gasto)) : [1],
                 backgroundColor: categoriasComGasto.length
                     ? categoriasComGasto.map(c => c.cor || '#15803d')
-                    : ['#e2e8f0']
+                    : ['#e7e1d4'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
             }]
         },
         options: {
-            plugins: { legend: { position: 'bottom' } }
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '64%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        boxWidth: 8,
+                        padding: 14,
+                        font: { family: "'DM Sans', sans-serif", size: 12 }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => categoriasComGasto.length
+                            ? ` ${ctx.label}: ${formatarBRL(ctx.parsed)}`
+                            : ' Nenhuma despesa registrada neste mês'
+                    }
+                }
+            }
         }
     });
 }
@@ -33,17 +60,50 @@ if (canvasMeses) {
                 {
                     label: 'Receitas',
                     data: meses.map(m => Number(m.receitas)),
-                    backgroundColor: '#15803d'
+                    backgroundColor: '#15803d',
+                    borderRadius: 6,
+                    maxBarThickness: 28
                 },
                 {
                     label: 'Despesas',
                     data: meses.map(m => Number(m.despesas)),
-                    backgroundColor: '#f87171'
+                    backgroundColor: '#ef4444',
+                    borderRadius: 6,
+                    maxBarThickness: 28
                 }
             ]
         },
         options: {
-            plugins: { legend: { position: 'bottom' } }
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    grid: { display: false }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#efebe0' },
+                    ticks: {
+                        callback: (value) => formatarBRL(value)
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        boxWidth: 8,
+                        padding: 14,
+                        font: { family: "'DM Sans', sans-serif", size: 12 }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => ` ${ctx.dataset.label}: ${formatarBRL(ctx.parsed.y)}`
+                    }
+                }
+            }
         }
     });
 }

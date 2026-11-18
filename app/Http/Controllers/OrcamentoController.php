@@ -27,6 +27,7 @@ class OrcamentoController extends Controller
             SELECT
                 c.id,
                 c.nome,
+                c.cor,
                 COALESCE(SUM(t.valor), 0) AS gasto,
                 o.limite,
                 o.id AS orcamento_id
@@ -41,13 +42,14 @@ class OrcamentoController extends Controller
                AND o.mes_referencia = ?
             WHERE c.user_id = ?
               AND c.tipo = 'despesa'
-            GROUP BY c.id, c.nome, o.limite, o.id
+            GROUP BY c.id, c.nome, c.cor, o.limite, o.id
             ORDER BY c.nome ASC
         ", [$inicio, $fim, $mes, $user->id]);
 
         $categorias = collect($rows)->map(fn ($row) => [
             'id' => (int) $row->id,
             'nome' => $row->nome,
+            'cor' => $row->cor,
             'gasto' => (float) $row->gasto,
             'limite' => $row->limite !== null ? (float) $row->limite : null,
             'orcamento_id' => $row->orcamento_id !== null ? (int) $row->orcamento_id : null,

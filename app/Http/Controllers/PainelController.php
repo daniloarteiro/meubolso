@@ -37,6 +37,7 @@ class PainelController extends Controller
                 t.descricao,
                 t.valor,
                 c.nome AS categoria_nome,
+                c.cor AS categoria_cor,
                 c.tipo
             FROM transacoes t
             INNER JOIN categorias c ON c.id = t.categoria_id

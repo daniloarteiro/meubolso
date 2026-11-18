@@ -50,6 +50,7 @@ class TransacaoController extends Controller
                 t.valor,
                 t.data,
                 c.nome AS categoria_nome,
+                c.cor AS categoria_cor,
                 c.tipo
             FROM transacoes t
             INNER JOIN categorias c ON c.id = t.categoria_id

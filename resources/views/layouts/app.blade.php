@@ -4,39 +4,57 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('titulo') - MeuBolso</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/icone-meubolso.svg') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="{{ asset('css/meubolso.css') }}" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-md navbar-dark navbar-meubolso">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-meubolso sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ route('painel.index') }}">MeuBolso</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu" aria-label="Abrir menu">
+            <a class="navbar-brand d-inline-flex align-items-center gap-2 me-lg-4" href="{{ route('painel.index') }}">
+                <img src="{{ asset('images/logo-meubolso-escura.svg') }}" alt="" width="28" height="30" aria-hidden="true">
+                <span><span class="fw-normal">Meu</span><span class="fw-bold">Bolso</span></span>
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#menu" aria-label="Abrir menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="menu">
-                <ul class="navbar-nav me-auto">
+                <ul class="navbar-nav me-auto gap-1 my-2 my-lg-0">
                     @php
                         $menus = [
-                            'painel.index'     => 'Visão Geral',
-                            'transacoes.index' => 'Transações',
-                            'orcamentos.index' => 'Orçamentos',
-                            'relatorios.index' => 'Relatórios',
+                            'painel.index'     => ['nome' => 'Visão Geral', 'icone' => 'bi-grid-1x2'],
+                            'transacoes.index' => ['nome' => 'Transações',  'icone' => 'bi-arrow-left-right'],
+                            'orcamentos.index' => ['nome' => 'Orçamentos',  'icone' => 'bi-bullseye'],
+                            'relatorios.index' => ['nome' => 'Relatórios',  'icone' => 'bi-bar-chart-line'],
                         ];
                     @endphp
-                    @foreach ($menus as $rota => $nome)
+                    @foreach ($menus as $rota => $item)
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs($rota) ? 'active' : '' }}" href="{{ route($rota) }}">{{ $nome }}</a>
+                            <a class="nav-link {{ request()->routeIs($rota) ? 'active' : '' }}" href="{{ route($rota) }}">
+                                <i class="bi {{ $item['icone'] }}" aria-hidden="true"></i>
+                                <span>{{ $item['nome'] }}</span>
+                            </a>
                         </li>
                     @endforeach
                 </ul>
-                <div class="d-flex align-items-center gap-3">
-                    <a href="{{ route('profile.edit') }}" class="link-light link-underline-opacity-0 link-underline-opacity-75-hover small">
-                        Meu Perfil ({{ auth()->user()->name }})
+
+                <div class="d-flex flex-wrap align-items-center gap-2 pt-2 pt-lg-0 border-top border-light border-opacity-10 border-lg-0">
+                    @php
+                        $inicial = mb_strtoupper(mb_substr(trim(auth()->user()->name), 0, 1));
+                    @endphp
+                    <a href="{{ route('profile.edit') }}" class="nav-perfil-pill" title="Meu Perfil">
+                        <span class="nav-perfil-inicial">{{ $inicial }}</span>
+                        <span>{{ auth()->user()->name }}</span>
                     </a>
                     <form method="POST" action="{{ route('logout') }}" class="m-0">
                         @csrf
-                        <button type="submit" class="btn btn-outline-light btn-sm">Sair</button>
+                        <button type="submit" class="btn btn-outline-light btn-sm px-3">
+                            <i class="bi bi-box-arrow-right me-1" aria-hidden="true"></i>Sair
+                        </button>
                     </form>
                 </div>
             </div>
@@ -45,14 +63,15 @@
 
     <main class="container py-4">
         @if (session('sucesso'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('sucesso') }}
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 rounded-3" role="alert">
+                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                <div>{{ session('sucesso') }}</div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
             </div>
         @endif
 
         @if ($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
                 <ul class="mb-0 ps-3">
                     @foreach ($errors->all() as $erro)
                         <li>{{ $erro }}</li>

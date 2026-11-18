@@ -2,49 +2,63 @@
 @section('titulo', 'Relatórios')
 
 @section('conteudo')
-    <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
         <div>
-            <h1 class="h4 mb-0">Relatório mensal</h1>
-            <small class="text-muted">{{ $mesLabel }}</small>
+            <h1 class="h3 mb-0 fw-bold">Relatório mensal</h1>
+            <p class="text-muted small mb-0 mt-1">{{ $mesLabel }}</p>
         </div>
-        <form method="GET" action="{{ route('relatorios.index') }}" class="d-flex gap-2 align-items-end">
+        <form method="GET" action="{{ route('relatorios.index') }}" class="d-flex flex-wrap gap-2 align-items-end">
             <div>
-                <label class="form-label mb-0" for="mes">Mês</label>
-                <input type="month" class="form-control" id="mes" name="mes" value="{{ $mes }}">
+                <label class="form-label small fw-semibold text-muted mb-1" for="mes">Mês de referência</label>
+                <input type="month" class="form-control form-control-sm" id="mes" name="mes" value="{{ $mes }}">
             </div>
-            <button type="submit" class="btn btn-outline-secondary">Ver</button>
-            <a href="{{ route('relatorios.pdf', ['mes' => $mes]) }}" class="btn btn-primary">Exportar PDF</a>
+            <button type="submit" class="btn btn-outline-secondary btn-sm px-3">Ver</button>
+            <a href="{{ route('relatorios.pdf', ['mes' => $mes]) }}" class="btn btn-primary btn-sm px-3">
+                <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Exportar PDF
+            </a>
         </form>
     </div>
 
     <div class="row g-3 mb-4">
         <div class="col-md-4">
-            <div class="card p-3">
-                <div class="text-muted">Receitas</div>
+            <div class="card kpi-card p-3 p-lg-4 h-100">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="text-muted small fw-medium">Receitas</span>
+                    <span class="kpi-icone kpi-icone-receita"><i class="bi bi-arrow-up-right" aria-hidden="true"></i></span>
+                </div>
                 <div class="valor-grande receita">+ R$ {{ number_format($receitas, 2, ',', '.') }}</div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card p-3">
-                <div class="text-muted">Despesas</div>
+            <div class="card kpi-card p-3 p-lg-4 h-100">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="text-muted small fw-medium">Despesas</span>
+                    <span class="kpi-icone kpi-icone-despesa"><i class="bi bi-arrow-down-right" aria-hidden="true"></i></span>
+                </div>
                 <div class="valor-grande despesa">− R$ {{ number_format($despesas, 2, ',', '.') }}</div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card p-3">
-                <div class="text-muted">Saldo</div>
-                <div class="valor-grande">R$ {{ number_format($saldo, 2, ',', '.') }}</div>
+            <div class="card kpi-card p-3 p-lg-4 h-100">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="text-muted small fw-medium">Saldo</span>
+                    <span class="kpi-icone kpi-icone-saldo"><i class="bi bi-wallet2" aria-hidden="true"></i></span>
+                </div>
+                <div class="valor-grande {{ $saldo < 0 ? 'despesa' : '' }}">
+                    {{ $saldo < 0 ? '− ' : '' }}R$ {{ number_format(abs($saldo), 2, ',', '.') }}
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="card p-3">
-        <h2 class="h6">Despesas por categoria</h2>
+    <div class="card p-3 p-lg-4">
+        <h2 class="h6 fw-bold mb-3">Despesas por categoria</h2>
         <div class="table-responsive">
-            <table class="table align-middle mb-0">
+            <table class="table table-meubolso align-middle mb-0">
                 <thead>
                     <tr>
                         <th>Categoria</th>
+                        <th style="min-width: 170px;">Participação</th>
                         <th class="text-end">Gasto</th>
                         <th class="text-end">% das despesas</th>
                     </tr>
@@ -52,13 +66,26 @@
                 <tbody>
                     @forelse ($categorias as $c)
                         <tr>
-                            <td>{{ $c['nome'] }}</td>
-                            <td class="text-end">R$ {{ number_format($c['gasto'], 2, ',', '.') }}</td>
-                            <td class="text-end">{{ $c['percentual'] }}%</td>
+                            <td>
+                                <span class="cat-pill">
+                                    <span class="cat-bolinha" style="--cat-cor: {{ $c['cor'] ?? '#15803d' }}"></span>
+                                    {{ $c['nome'] }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 8px; border-radius: 999px; background-color: #eee9dc;">
+                                    <div class="progress-bar" style="width: {{ min($c['percentual'], 100) }}%; background-color: {{ $c['cor'] ?? '#15803d' }}; border-radius: 999px;"></div>
+                                </div>
+                            </td>
+                            <td class="text-end valor-num fw-semibold">R$ {{ number_format($c['gasto'], 2, ',', '.') }}</td>
+                            <td class="text-end valor-num text-muted">{{ $c['percentual'] }}%</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="text-center text-muted py-4">Nenhuma despesa registrada neste mês.</td>
+                            <td colspan="4" class="text-center text-muted py-5">
+                                <i class="bi bi-bar-chart d-block fs-3 mb-2 opacity-50" aria-hidden="true"></i>
+                                Nenhuma despesa registrada neste mês.
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
