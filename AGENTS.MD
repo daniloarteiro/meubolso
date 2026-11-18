@@ -28,27 +28,27 @@
 1. **Projeto e Pacotes:**
    - Laravel `v13.43.0`, Laravel Breeze `v2.4.2`, `barryvdh/laravel-dompdf` `v3.1.2`.
    - Limpeza concluída: removidos `package.json`, `node_modules`, `vite.config.js`, `tailwind.config.js`, `postcss.config.js` e views/componentes Tailwind não usados.
-2. **Banco de Dados (Migrations e Models):**
-   - Tabelas: `users`, `categorias`, `transacoes`, `orcamentos`.
-   - Models: `App\Models\User`, `App\Models\Categoria` (com `criarPadraoPara(User $user)`), `App\Models\Transacao`, `App\Models\Orcamento`.
-   - Seeder (`DatabaseSeeder`): usuário demo `danilo@meubolso.com` / senha `12345678`, com categorias padrão, lançamentos de exemplo e metas mensais.
-   - Atualmente o `.env` ainda está apontando para **SQLite** (`database/database.sqlite`, já populado e funcionando para testes locais).
+2. **Banco de Dados (Migrations, Models e MySQL 3FN):**
+   - Tabelas: `users`, `categorias` (`UNIQUE(user_id, tipo, nome)`), `transacoes` (normalizada em 3FN sem coluna `tipo` redundante; tipo derivado via `categoria_id`), `orcamentos` (`UNIQUE(user_id, categoria_id, mes_referencia)` + `INDEX(user_id, mes_referencia)`).
+   - Models: `App\Models\User`, `App\Models\Categoria` (com `criarPadraoPara(User $user)`), `App\Models\Transacao` (com accessor `getTipoAttribute()`), `App\Models\Orcamento`.
+   - Seeder (`DatabaseSeeder`): usuário demo `danilo@meubolso.com` / senha `12345678`, com 7 categorias padrão, 18 lançamentos de exemplo e 5 metas mensais.
+   - `.env` conectado ao banco **MySQL `meubolso`** (`127.0.0.1:3306`, usuário `root`), já migrado e semeado (`php artisan migrate:fresh --seed`); `.env.example` documentado.
 3. **Autenticação, Controllers e Views:**
-   - Auth completa com Breeze adaptada para Bootstrap 5 (`login`, `register`/`cadastro`, `forgot-password`, `reset-password`, `confirm-password`, `verify-email`, `logout` via `POST` e `profile/edit`).
-   - `PainelController`: resumo do mês (saldo, receitas, despesas), últimas 5 transações e dados dinâmicos para os dois gráficos (`Chart.js` em `public/js/painel.js`).
-   - `TransacaoController`: listagem com filtros (`de`, `ate`, `tipo`, `categoria_id`), criação (`POST`), edição (`PUT` via modal) e exclusão (`DELETE`).
-   - `OrcamentoController`: metas mensais por categoria com cálculo real dos gastos do mês, alertas (80% / 100%) e remoção de meta.
-   - `RelatorioController`: resumo por mês de referência e exportação em **PDF** (`GET /relatorios/pdf` usando `relatorios/pdf.blade.php` + DomPDF).
-4. **Testes Automatizados:**
-   - `php artisan test`: **30 testes passaram** (`99` asserções), cobrindo Breeze Auth, redirecionamentos, CRUD de transações, isolamento entre usuários, orçamentos e geração de PDF.
+   - Auth completa com Breeze adaptada para Bootstrap 5 (`login`, `register`/`cadastro`, `forgot-password`, `reset-password`, `confirm-password`, `verify-email`, `logout` via `POST` e `profile/edit` com link **Meu Perfil** na navbar).
+   - Consultas de leitura (`SELECT`) nos 4 controllers principais convertidas para **SQL explícito parametrizado (`DB::select("SELECT ...", [...])`)** com bindings `?` (escritas `store`/`update`/`destroy` mantidas no Eloquent):
+     - `PainelController`: resumo do mês (saldo, receitas, despesas), últimas 5 transações e dados para os dois gráficos (`Chart.js` em `public/js/painel.js`).
+     - `TransacaoController`: listagem com filtros (`de`, `ate`, `tipo`, `categoria_id`), criação (`POST`), edição (`PUT` via modal com filtro dinâmico JS de categorias por tipo) e exclusão (`DELETE`).
+     - `OrcamentoController`: metas mensais por categoria `despesa` (rejeita categoria de receita no `store`), cálculo real dos gastos do mês, alertas (80% / 100%) e remoção apenas da meta (preservando transações).
+     - `RelatorioController`: resumo por mês de referência (com proteção `!Y-m` e array params) e exportação em **PDF** (`GET /relatorios/pdf` usando `relatorios/pdf.blade.php` + DomPDF).
+4. **Testes Automatizados e Specs (`.specs/`):**
+   - Repositório Git local inicializado (`master`), com specs verificadas em `.specs/features/normalizacao-banco-mysql/` e `.specs/features/consultas-sql-controllers/` + `.specs/STATE.md` (`AD-001`) + `.specs/LESSONS.md`.
+   - `php artisan test`: **46 testes passaram** (`261` asserções), cobrindo Breeze Auth, redirecionamentos, CRUD, normalização 3FN, SQL parametrizado, isolamento entre usuários, orçamentos, PDF e edge cases.
 
 ---
 
 ## 4. Onde Paramos e Próximos Passos ao Retornar
-**Status atual:** A instalação do **MySQL Server 8.0.46 + MySQL Workbench** acabou de concluir todos os passos com check verde (parou na tela final de clicar em **Finish**). O banco `meubolso` ainda **não foi criado** no MySQL e o `.env` ainda está usando SQLite.
+**Status atual:** Banco MySQL `meubolso` criado, migrado e semeado; todas as telas usando `DB::select` parametrizado; suíte de 46 testes verde e verificada.
 
-**Ao retomar:**
-1. Confirmar que o instalador do MySQL foi finalizado e o serviço `MySQL` está ativo na porta `3306`.
-2. Atualizar o `.env` em `C:\Users\danil\OneDrive\Documentos\Projetos\meubolso\.env` para usar MySQL (`DB_CONNECTION=mysql`, `DB_HOST=127.0.0.1`, `DB_PORT=3306`, `DB_DATABASE=meubolso`, `DB_USERNAME=root`, `DB_PASSWORD=<senha do root>`).
-3. Criar o database `meubolso` no MySQL e rodar `php artisan migrate --seed` (ou `php artisan migrate` se o usuário preferir banco zerado).
-4. Testar o sistema no navegador com `php artisan serve` conectado ao MySQL (login, transações, orçamentos, gráficos e download de PDF) e verificar com o usuário próximos ajustes (ex.: cadastro de categorias personalizadas, `.env.example` documentado e preparação para subir no GitHub).
+**Ao retomar amanhã:**
+1. Testar o sistema manualmente no navegador com `php artisan serve` (`http://127.0.0.1:8000`, login `danilo@meubolso.com` / `12345678`) e revisar se quer algum ajuste visual ou funcional.
+2. Definir com o usuário se haverá novas features (ex.: tela futura de CRUD de categorias personalizadas) ou se já partimos para revisão final/entrega (README, preparação e `git push` para o GitHub mediante autorização).

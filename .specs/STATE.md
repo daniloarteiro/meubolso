@@ -12,11 +12,11 @@
 
 ## Handoff
 
-- **Feature**: .specs/features/consultas-sql-controllers
-- **Phase / Task**: Done (T1–T4 concluídas, Verifier auditou e achados fechados)
-- **Completed**: T1, T2, T3, T4
+- **Feature**: .specs/features/consultas-sql-controllers (concluída após .specs/features/normalizacao-banco-mysql)
+- **Phase / Task**: Sessão encerrada em 2026-11-18 — ambas as features concluídas e verificadas (`validate_verification.py` 0 erros)
+- **Completed**: normalizacao-banco-mysql (T1–T10), consultas-sql-controllers (T1–T4)
 - **In-progress**: none
-- **Next step**: Testar no navegador (`php artisan serve`) ou iniciar próxima feature
+- **Next step**: Rodar `php artisan serve`, validar o sistema manualmente no navegador com o usuário (`danilo@meubolso.com` / `12345678`) contra o MySQL `meubolso`, decidir se entra CRUD de categorias personalizadas e preparar repositório remoto (GitHub) se autorizado.
 - **Blockers**: none
 - **Uncommitted files**: none
-- **Branch**: master
+- **Branch**: master (commit `7234692` + atualização de handoff)
