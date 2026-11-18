@@ -8,8 +8,8 @@ use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\TransacaoController;
 use Illuminate\Support\Facades\Route;
 
-// Redirecionamento inicial
-Route::redirect('/', '/painel');
+// Página inicial de apresentação (landing page)
+Route::view('/', 'apresentacao')->name('apresentacao');
 
 // Alias em português para a tela de cadastro do Breeze
 Route::get('/cadastro', [RegisteredUserController::class, 'create'])
@@ -17,7 +17,7 @@ Route::get('/cadastro', [RegisteredUserController::class, 'create'])
     ->name('cadastro');
 
 // ---------- ROTAS DO SISTEMA ----------
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', fn () => redirect()->route('painel.index'))->name('dashboard');
 
     Route::get('/painel', [PainelController::class, 'index'])->name('painel.index');
@@ -33,8 +33,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/relatorios', [RelatorioController::class, 'index'])->name('relatorios.index');
     Route::get('/relatorios/pdf', [RelatorioController::class, 'pdf'])->name('relatorios.pdf');
+});
 
-    // Perfil (Breeze)
+// Perfil (Breeze — acessível mesmo antes de verificar e-mail para corrigir eventual erro de digitação)
+Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
