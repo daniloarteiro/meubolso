@@ -15,12 +15,12 @@ class PainelController extends Controller
         $fimMes = $agora->copy()->endOfMonth()->toDateString();
 
         $receitas = (float) $user->transacoes()
-            ->where('tipo', 'receita')
+            ->whereHas('categoria', fn ($q) => $q->where('tipo', 'receita'))
             ->whereBetween('data', [$inicioMes, $fimMes])
             ->sum('valor');
 
         $despesas = (float) $user->transacoes()
-            ->where('tipo', 'despesa')
+            ->whereHas('categoria', fn ($q) => $q->where('tipo', 'despesa'))
             ->whereBetween('data', [$inicioMes, $fimMes])
             ->sum('valor');
 
@@ -35,7 +35,7 @@ class PainelController extends Controller
 
         // Gastos do mês agrupados por categoria para o gráfico de rosca
         $gastosPorCat = $user->transacoes()
-            ->where('tipo', 'despesa')
+            ->whereHas('categoria', fn ($q) => $q->where('tipo', 'despesa'))
             ->whereBetween('data', [$inicioMes, $fimMes])
             ->selectRaw('categoria_id, SUM(valor) as total')
             ->groupBy('categoria_id')
@@ -70,11 +70,11 @@ class PainelController extends Controller
             $meses[] = [
                 'label' => $siglasMeses[$dataMes->month],
                 'receitas' => (float) $user->transacoes()
-                    ->where('tipo', 'receita')
+                    ->whereHas('categoria', fn ($q) => $q->where('tipo', 'receita'))
                     ->whereBetween('data', [$ini, $fim])
                     ->sum('valor'),
                 'despesas' => (float) $user->transacoes()
-                    ->where('tipo', 'despesa')
+                    ->whereHas('categoria', fn ($q) => $q->where('tipo', 'despesa'))
                     ->whereBetween('data', [$ini, $fim])
                     ->sum('valor'),
             ];

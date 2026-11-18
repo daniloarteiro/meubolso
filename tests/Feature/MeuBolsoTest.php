@@ -151,4 +151,37 @@ class MeuBolsoTest extends TestCase
         $pdf->assertOk();
         $this->assertStringContainsString('application/pdf', $pdf->headers->get('content-type'));
     }
+
+    public function test_painel_e_relatorio_derivam_receitas_e_despesas_da_categoria(): void
+    {
+        $user = User::factory()->create();
+        Categoria::criarPadraoPara($user);
+        $catSalario = $user->categorias()->where('nome', 'Salário')->first();
+        $catAlimentacao = $user->categorias()->where('nome', 'Alimentação')->first();
+        $hoje = now()->format('Y-m-d');
+
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catSalario->id,
+            'tipo' => 'despesa', // propositalmente divergente para provar derivacao pela categoria
+            'descricao' => 'Bolsa estágio',
+            'valor' => 1500.00,
+            'data' => $hoje,
+        ]);
+
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catAlimentacao->id,
+            'tipo' => 'receita', // propositalmente divergente para provar derivacao pela categoria
+            'descricao' => 'Jantar',
+            'valor' => 250.00,
+            'data' => $hoje,
+        ]);
+
+        $resPainel = $this->actingAs($user)->get('/painel');
+        $resPainel->assertOk()
+            ->assertViewHas('receitas', 1500.0)
+            ->assertViewHas('despesas', 250.0)
+            ->assertViewHas('saldo', 1250.0);
+    }
 }

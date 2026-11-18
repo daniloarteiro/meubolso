@@ -116,10 +116,10 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] Receitas, despesas e histórico de 6 meses no `PainelController` consultam `categorias.tipo` via relacionamento
-- [ ] Teste em `tests/Feature/MeuBolsoTest.php` valida cálculo de receitas, despesas e saldo no painel derivado da categoria
-- [ ] Gate check passes: `php artisan test`
-- [ ] Test count: >= 31 tests pass (no silent deletions)
+- [x] Receitas, despesas e histórico de 6 meses no `PainelController` consultam `categorias.tipo` via relacionamento
+- [x] Teste em `tests/Feature/MeuBolsoTest.php` valida cálculo de receitas, despesas e saldo no painel derivado da categoria
+- [x] Gate check passes: `php artisan test`
+- [x] Test count: >= 31 tests pass (no silent deletions)
 
 **Tests**: feature
 **Gate**: full
