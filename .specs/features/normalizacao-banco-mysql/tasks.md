@@ -271,10 +271,10 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] `.env` aponta para `DB_CONNECTION=mysql` e `DB_DATABASE=meubolso`
-- [ ] `php artisan migrate:fresh --seed` executa sem erros no MySQL `meubolso` criando tabelas e usuário demo `danilo@meubolso.com`
-- [ ] Gate check passes: `php artisan test`
-- [ ] Test count: >= 37 tests pass (no silent deletions)
+- [x] `.env` aponta para `DB_CONNECTION=mysql` e `DB_DATABASE=meubolso`
+- [x] `php artisan migrate:fresh --seed` executa sem erros no MySQL `meubolso` criando tabelas e usuário demo `danilo@meubolso.com`
+- [x] Gate check passes: `php artisan test`
+- [x] Test count: >= 37 tests pass (no silent deletions)
 
 **Tests**: none
 **Gate**: build
