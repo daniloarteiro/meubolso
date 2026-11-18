@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('cor', 20)->default('#15803d');
             $table->timestamps();
 
-            $table->unique(['user_id', 'nome']);
+            $table->unique(['user_id', 'tipo', 'nome']);
         });
     }
 

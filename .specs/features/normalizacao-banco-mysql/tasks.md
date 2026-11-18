@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: skipped - alteração direta no padrão MVC Laravel existente (decisão `AD-001` em `.specs/STATE.md`)
-**Status**: Approved
+**Status**: In Progress
 **Approved**: 2026-11-18 - user: "ok vamos prosseguir então e usando a opção A eu te passo a senha na hora"
 **Build**: `php artisan test`
 **Run feature**: `php vendor/bin/phpunit --testdox tests/Feature/MeuBolsoTest.php`
@@ -74,9 +74,9 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] Migration define `unique(['user_id', 'tipo', 'nome'])` em `categorias`
-- [ ] Gate check passes: `php artisan test`
-- [ ] Test count: 30 tests pass (no silent deletions)
+- [x] Migration define `unique(['user_id', 'tipo', 'nome'])` em `categorias`
+- [x] Gate check passes: `php artisan test`
+- [x] Test count: 30 tests pass (no silent deletions)
 
 **Tests**: none
 **Gate**: build
