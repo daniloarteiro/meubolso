@@ -28,10 +28,6 @@ Aplicação web desenvolvida em **PHP + Laravel** para controle de receitas, des
    ```
 5. Acesse no navegador: `http://127.0.0.1:8000`
 
-### Usuário de exemplo (criado pelo seeder)
-- **E-mail:** `danilo@meubolso.com`
-- **Senha:** `12345678`
-
 ## Usando com MySQL (XAMPP / Laragon)
 No arquivo `.env`, troque a configuração de banco para MySQL:
 ```env
