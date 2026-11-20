@@ -579,4 +579,31 @@ class MeuBolsoTest extends TestCase
             ->assertSee('Mercado Outubro')
             ->assertDontSee('Jantar Novembro');
     }
+
+    public function test_driver_brevo_envia_email_via_api_https(): void
+    {
+        \Illuminate\Support\Facades\Http::fake([
+            'https://api.brevo.com/v3/smtp/email' => \Illuminate\Support\Facades\Http::response(['messageId' => '<teste@brevo>'], 201),
+        ]);
+
+        config([
+            'mail.default' => 'brevo',
+            'services.brevo.key' => 'xkeysib-teste-123',
+            'mail.from.address' => 'remetente@meubolso.com',
+            'mail.from.name' => 'MeuBolso',
+        ]);
+
+        \Illuminate\Support\Facades\Mail::raw('Olá do MeuBolso', function ($message) {
+            $message->to('destino@example.com', 'Danilo')
+                ->subject('Teste Brevo');
+        });
+
+        \Illuminate\Support\Facades\Http::assertSent(function ($request) {
+            return $request->url() === 'https://api.brevo.com/v3/smtp/email'
+                && $request->hasHeader('api-key', 'xkeysib-teste-123')
+                && $request['sender']['email'] === 'remetente@meubolso.com'
+                && $request['to'][0]['email'] === 'destino@example.com'
+                && $request['subject'] === 'Teste Brevo';
+        });
+    }
 }
