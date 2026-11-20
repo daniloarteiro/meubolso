@@ -7,23 +7,32 @@
             <h1 class="h3 mb-0 fw-bold">Transações</h1>
             <p class="text-muted small mb-0 mt-1">Consulte, filtre e gerencie suas entradas e saídas.</p>
         </div>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalLancamento">
+        <button class="btn btn-primary btn-acao-topo" data-bs-toggle="modal" data-bs-target="#modalLancamento">
             <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Nova transação
         </button>
     </div>
 
     {{-- Filtros --}}
+    @php
+        $mesFiltro = is_string(request('mes')) && preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', request('mes'))
+            ? request('mes')
+            : '';
+    @endphp
     <form method="GET" action="{{ route('transacoes.index') }}" class="card p-3 p-lg-4 mb-4">
         <div class="row g-2 align-items-end">
-            <div class="col-6 col-md-2">
+            <div class="col-6 col-md-4 col-xl-2">
+                <label class="form-label small fw-semibold mb-1" for="mes">Mês</label>
+                <input type="month" class="form-control form-control-sm" id="mes" name="mes" value="{{ $mesFiltro }}">
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
                 <label class="form-label small fw-semibold mb-1" for="de">De</label>
                 <input type="date" class="form-control form-control-sm" id="de" name="de" value="{{ is_string(request('de')) ? request('de') : '' }}">
             </div>
-            <div class="col-6 col-md-2">
+            <div class="col-6 col-md-4 col-xl-2">
                 <label class="form-label small fw-semibold mb-1" for="ate">Até</label>
                 <input type="date" class="form-control form-control-sm" id="ate" name="ate" value="{{ is_string(request('ate')) ? request('ate') : '' }}">
             </div>
-            <div class="col-6 col-md-2">
+            <div class="col-6 col-md-4 col-xl-2">
                 <label class="form-label small fw-semibold mb-1" for="tipo">Tipo</label>
                 <select class="form-select form-select-sm" id="tipo" name="tipo">
                     <option value="">Todos</option>
@@ -31,7 +40,7 @@
                     <option value="despesa" {{ request('tipo') === 'despesa' ? 'selected' : '' }}>Despesas</option>
                 </select>
             </div>
-            <div class="col-6 col-md-3">
+            <div class="col-6 col-md-4 col-xl-2">
                 <label class="form-label small fw-semibold mb-1" for="categoria_id">Categoria</label>
                 <select class="form-select form-select-sm" id="categoria_id" name="categoria_id">
                     <option value="">Todas</option>
@@ -42,8 +51,8 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-12 col-md-3 d-flex gap-2 justify-content-md-end mt-2 mt-md-0">
-                <button type="submit" class="btn btn-primary btn-sm flex-grow-1 flex-md-grow-0 px-3">
+            <div class="col-12 col-md-4 col-xl-2 d-flex gap-2 justify-content-xl-end mt-2 mt-md-0">
+                <button type="submit" class="btn btn-primary btn-sm flex-grow-1 flex-xl-grow-0 px-3">
                     <i class="bi bi-funnel me-1" aria-hidden="true"></i>Filtrar
                 </button>
                 <a href="{{ route('transacoes.index') }}" class="btn btn-outline-secondary btn-sm px-3">Limpar</a>
@@ -55,7 +64,7 @@
     <div class="card p-3 p-lg-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="h6 fw-bold mb-0">Lançamentos</h2>
-            <span class="text-muted small">{{ count($transacoes) }} {{ count($transacoes) === 1 ? 'registro' : 'registros' }}</span>
+            <span class="text-muted small">{{ $transacoes->total() }} {{ $transacoes->total() === 1 ? 'registro' : 'registros' }}</span>
         </div>
         <div class="table-responsive">
             <table class="table table-meubolso align-middle mb-0">
@@ -83,28 +92,32 @@
                                 {{ $l->tipo == 'receita' ? '+' : '−' }} R$ {{ number_format($l->valor, 2, ',', '.') }}
                             </td>
                             <td class="text-end text-nowrap">
-                                <button
-                                    type="button"
-                                    class="btn btn-sm btn-outline-secondary btn-editar"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalEditar"
-                                    data-url="{{ route('transacoes.update', $l->id) }}"
-                                    data-tipo="{{ $l->tipo }}"
-                                    data-descricao="{{ $l->descricao }}"
-                                    data-valor="{{ $l->valor }}"
-                                    data-data="{{ \Carbon\Carbon::parse($l->data)->format('Y-m-d') }}"
-                                    data-categoria="{{ $l->categoria_id }}"
-                                >
-                                    <i class="bi bi-pencil me-1" aria-hidden="true"></i>Editar
-                                </button>
-
-                                <form method="POST" action="{{ route('transacoes.destroy', $l->id) }}" class="d-inline" onsubmit="return confirm('Deseja excluir esta transação?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-trash3 me-1" aria-hidden="true"></i>Excluir
+                                <div class="d-inline-flex align-items-center justify-content-end gap-1">
+                                    <button
+                                        type="button"
+                                        class="btn-icone-acao btn-editar"
+                                        title="Editar transação"
+                                        aria-label="Editar transação"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalEditar"
+                                        data-url="{{ route('transacoes.update', $l->id) }}"
+                                        data-tipo="{{ $l->tipo }}"
+                                        data-descricao="{{ $l->descricao }}"
+                                        data-valor="{{ $l->valor }}"
+                                        data-data="{{ \Carbon\Carbon::parse($l->data)->format('Y-m-d') }}"
+                                        data-categoria="{{ $l->categoria_id }}"
+                                    >
+                                        <img src="{{ asset('images/botao-editar.svg') }}" alt="" width="32" height="32" aria-hidden="true">
                                     </button>
-                                </form>
+
+                                    <form method="POST" action="{{ route('transacoes.destroy', $l->id) }}" class="d-inline-flex m-0" onsubmit="return confirm('Deseja excluir esta transação?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn-icone-acao" title="Excluir transação" aria-label="Excluir transação">
+                                            <img src="{{ asset('images/botao-excluir.svg') }}" alt="" width="32" height="32" aria-hidden="true">
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -118,6 +131,17 @@
                 </tbody>
             </table>
         </div>
+
+        @if ($transacoes->hasPages())
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-3 mt-2 border-top border-light-subtle">
+                <small class="text-muted">
+                    Mostrando {{ $transacoes->firstItem() }} a {{ $transacoes->lastItem() }} de {{ $transacoes->total() }} registros
+                </small>
+                <div class="paginacao-meubolso">
+                    {{ $transacoes->links('components.paginacao') }}
+                </div>
+            </div>
+        @endif
     </div>
 
     {{-- Janela de novo lançamento --}}
@@ -272,6 +296,26 @@
             eCategoria.value = btn.dataset.categoria;
         });
     });
+
+    const filtroMes = document.getElementById('mes');
+    const filtroDe = document.getElementById('de');
+    const filtroAte = document.getElementById('ate');
+
+    if (filtroMes && filtroDe && filtroAte) {
+        filtroMes.addEventListener('change', () => {
+            if (filtroMes.value) {
+                filtroDe.value = '';
+                filtroAte.value = '';
+            }
+        });
+        [filtroDe, filtroAte].forEach(campo => {
+            campo.addEventListener('change', () => {
+                if (campo.value) {
+                    filtroMes.value = '';
+                }
+            });
+        });
+    }
 
     if (new URLSearchParams(window.location.search).get('novo') === '1') {
         const modalEl = document.getElementById('modalLancamento');

@@ -2,21 +2,21 @@
 @section('titulo', 'Relatórios')
 
 @section('conteudo')
-    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <h1 class="h3 mb-0 fw-bold">Relatório mensal</h1>
             <p class="text-muted small mb-0 mt-1">{{ $mesLabel }}</p>
         </div>
-        <form method="GET" action="{{ route('relatorios.index') }}" class="d-flex flex-wrap gap-2 align-items-end">
-            <div>
-                <label class="form-label small fw-semibold text-muted mb-1" for="mes">Mês de referência</label>
-                <input type="month" class="form-control form-control-sm" id="mes" name="mes" value="{{ $mes }}">
-            </div>
-            <button type="submit" class="btn btn-outline-secondary btn-sm px-3">Ver</button>
-            <a href="{{ route('relatorios.pdf', ['mes' => $mes]) }}" class="btn btn-primary btn-sm px-3">
-                <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Exportar PDF
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <form method="GET" action="{{ route('relatorios.index') }}" class="filtro-mes-grupo">
+                <label class="filtro-mes-rotulo" for="mes">Mês</label>
+                <input type="month" class="filtro-mes-input" id="mes" name="mes" value="{{ $mes }}" aria-label="Mês de referência">
+                <button type="submit" class="filtro-mes-btn">Ver</button>
+            </form>
+            <a href="{{ route('relatorios.pdf', ['mes' => $mes]) }}" class="btn btn-primary btn-acao-topo">
+                Exportar PDF
             </a>
-        </form>
+        </div>
     </div>
 
     <div class="row g-3 mb-4">

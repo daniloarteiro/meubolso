@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -10,11 +11,18 @@ class PainelController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $agora = now();
-        $inicioMes = $agora->copy()->startOfMonth()->toDateString();
-        $fimMes = $agora->copy()->endOfMonth()->toDateString();
+        $mes = $request->input('mes');
 
-        // Totais de receitas e despesas do mês atual
+        if (! is_string($mes) || ! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $mes)) {
+            $mes = now()->format('Y-m');
+        }
+
+        $dataBase = Carbon::createFromFormat('!Y-m', $mes);
+        $ehMesAtual = $mes === now()->format('Y-m');
+        $inicioMes = $dataBase->copy()->startOfMonth()->toDateString();
+        $fimMes = $dataBase->copy()->endOfMonth()->toDateString();
+
+        // Totais de receitas e despesas do mês selecionado
         $totais = DB::select("
             SELECT
                 COALESCE(SUM(CASE WHEN c.tipo = 'receita' THEN t.valor ELSE 0 END), 0) AS receitas,
@@ -29,7 +37,7 @@ class PainelController extends Controller
         $despesas = (float) $totais->despesas;
         $saldo = $receitas - $despesas;
 
-        // Últimas 5 transações do usuário
+        // Últimas 5 transações do mês selecionado
         $transacoes = DB::select("
             SELECT
                 t.id,
@@ -42,9 +50,10 @@ class PainelController extends Controller
             FROM transacoes t
             INNER JOIN categorias c ON c.id = t.categoria_id
             WHERE t.user_id = ?
+              AND DATE(t.data) BETWEEN ? AND ?
             ORDER BY t.data DESC, t.id DESC
             LIMIT 5
-        ", [$user->id]);
+        ", [$user->id, $inicioMes, $fimMes]);
 
         // Gastos do mês agrupados por categoria para o gráfico de rosca
         $categoriasRows = DB::select("
@@ -71,7 +80,7 @@ class PainelController extends Controller
             ])
             ->values();
 
-        // Histórico dos últimos 6 meses para o gráfico de barras
+        // Histórico dos últimos 6 meses até o mês selecionado para o gráfico de barras
         $siglasMeses = [
             1 => 'Jan', 2 => 'Fev', 3 => 'Mar', 4 => 'Abr',
             5 => 'Mai', 6 => 'Jun', 7 => 'Jul', 8 => 'Ago',
@@ -80,7 +89,7 @@ class PainelController extends Controller
 
         $meses = [];
         for ($i = 5; $i >= 0; $i--) {
-            $dataMes = $agora->copy()->subMonthsNoOverflow($i);
+            $dataMes = $dataBase->copy()->subMonthsNoOverflow($i);
             $ini = $dataMes->copy()->startOfMonth()->toDateString();
             $fim = $dataMes->copy()->endOfMonth()->toDateString();
 
@@ -106,7 +115,7 @@ class PainelController extends Controller
             5 => 'Maio', 6 => 'Junho', 7 => 'Julho', 8 => 'Agosto',
             9 => 'Setembro', 10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro',
         ];
-        $mesAtualLabel = $nomesMeses[$agora->month] . ' de ' . $agora->year;
+        $mesAtualLabel = $nomesMeses[$dataBase->month] . ' de ' . $dataBase->year;
 
         return view('painel.index', compact(
             'transacoes',
@@ -115,7 +124,9 @@ class PainelController extends Controller
             'receitas',
             'despesas',
             'saldo',
-            'mesAtualLabel'
+            'mesAtualLabel',
+            'mes',
+            'ehMesAtual'
         ));
     }
 }

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transacao;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class TransacaoController extends Controller
@@ -15,15 +17,26 @@ class TransacaoController extends Controller
         $params = [$user->id];
 
         $de = $request->input('de');
-        if (is_string($de) && $de !== '') {
-            $filtros[] = 'DATE(t.data) >= ?';
-            $params[] = $de;
-        }
-
         $ate = $request->input('ate');
-        if (is_string($ate) && $ate !== '') {
-            $filtros[] = 'DATE(t.data) <= ?';
-            $params[] = $ate;
+        $temDe = is_string($de) && $de !== '';
+        $temAte = is_string($ate) && $ate !== '';
+
+        $mes = $request->input('mes');
+        if (! $temDe && ! $temAte && is_string($mes) && preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $mes)) {
+            $dataMes = Carbon::createFromFormat('!Y-m', $mes);
+            $filtros[] = 'DATE(t.data) BETWEEN ? AND ?';
+            $params[] = $dataMes->copy()->startOfMonth()->toDateString();
+            $params[] = $dataMes->copy()->endOfMonth()->toDateString();
+        } else {
+            if ($temDe) {
+                $filtros[] = 'DATE(t.data) >= ?';
+                $params[] = $de;
+            }
+
+            if ($temAte) {
+                $filtros[] = 'DATE(t.data) <= ?';
+                $params[] = $ate;
+            }
         }
 
         $tipo = $request->input('tipo');
@@ -41,8 +54,26 @@ class TransacaoController extends Controller
         }
 
         $where = implode(' AND ', $filtros);
+        $porPagina = 10;
+        $paginaInput = $request->input('page', 1);
+        $pagina = (is_scalar($paginaInput) && ctype_digit((string) $paginaInput) && (int) $paginaInput > 0)
+            ? (int) $paginaInput
+            : 1;
 
-        $transacoes = DB::select("
+        $total = (int) DB::select("
+            SELECT COUNT(*) AS total
+            FROM transacoes t
+            INNER JOIN categorias c ON c.id = t.categoria_id
+            WHERE {$where}
+        ", $params)[0]->total;
+
+        $ultimaPagina = max(1, (int) ceil($total / $porPagina));
+        if ($pagina > $ultimaPagina) {
+            $pagina = $ultimaPagina;
+        }
+        $offset = ($pagina - 1) * $porPagina;
+
+        $rows = DB::select("
             SELECT
                 t.id,
                 t.categoria_id,
@@ -56,7 +87,19 @@ class TransacaoController extends Controller
             INNER JOIN categorias c ON c.id = t.categoria_id
             WHERE {$where}
             ORDER BY t.data DESC, t.id DESC
-        ", $params);
+            LIMIT ? OFFSET ?
+        ", [...$params, $porPagina, $offset]);
+
+        $transacoes = new LengthAwarePaginator(
+            $rows,
+            $total,
+            $porPagina,
+            $pagina,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
 
         $categorias = DB::select("
             SELECT id, nome, tipo, cor

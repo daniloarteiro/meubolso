@@ -12,7 +12,7 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark navbar-meubolso sticky-top">
-        <div class="container">
+        <div class="container-fluid container-meubolso">
             <a class="navbar-brand d-inline-flex align-items-center gap-2 me-lg-4" href="{{ route('painel.index') }}">
                 <img src="{{ asset('images/logo-meubolso-escura.svg') }}" alt="" width="28" height="30" aria-hidden="true">
                 <span><span class="fw-normal">Meu</span><span class="fw-bold">Bolso</span></span>
@@ -25,6 +25,10 @@
             <div class="collapse navbar-collapse" id="menu">
                 <ul class="navbar-nav me-auto gap-1 my-2 my-lg-0">
                     @php
+                        $mesNav = request()->input('mes');
+                        $mesQuery = (is_string($mesNav) && preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $mesNav))
+                            ? ['mes' => $mesNav]
+                            : [];
                         $menus = [
                             'painel.index'     => ['nome' => 'Visão Geral', 'icone' => 'bi-grid-1x2'],
                             'transacoes.index' => ['nome' => 'Transações',  'icone' => 'bi-arrow-left-right'],
@@ -34,7 +38,7 @@
                     @endphp
                     @foreach ($menus as $rota => $item)
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs($rota) ? 'active' : '' }}" href="{{ route($rota) }}">
+                            <a class="nav-link {{ request()->routeIs($rota) ? 'active' : '' }}" href="{{ route($rota, $mesQuery) }}">
                                 <i class="bi {{ $item['icone'] }}" aria-hidden="true"></i>
                                 <span>{{ $item['nome'] }}</span>
                             </a>
@@ -42,7 +46,7 @@
                     @endforeach
                 </ul>
 
-                <div class="d-flex flex-wrap align-items-center gap-2 pt-2 pt-lg-0 border-top border-light border-opacity-10 border-lg-0">
+                <div class="d-flex flex-wrap align-items-center gap-2 pt-2 pt-lg-0">
                     @php
                         $inicial = mb_strtoupper(mb_substr(trim(auth()->user()->name), 0, 1));
                     @endphp
@@ -61,7 +65,7 @@
         </div>
     </nav>
 
-    <main class="container py-4">
+    <main class="container-fluid container-meubolso py-4">
         @if (session('sucesso'))
             <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 rounded-3" role="alert">
                 <i class="bi bi-check-circle-fill" aria-hidden="true"></i>

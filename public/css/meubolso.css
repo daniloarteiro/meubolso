@@ -16,10 +16,29 @@
   --bs-link-hover-color: #0b3b2c;
 }
 
+html,
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
 body {
   background: var(--fundo);
   color: var(--tinta);
   font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+}
+
+.container-meubolso {
+  max-width: 1880px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(16px, 2vw, 32px);
+  padding-right: clamp(16px, 2vw, 32px);
 }
 
 h1, h2, h3, .font-display {
@@ -104,6 +123,38 @@ h1, h2, h3, .font-display {
   border-radius: 8px;
 }
 
+.btn-icone-acao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 8px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+
+.btn-icone-acao:hover {
+  transform: translateY(-1px);
+  opacity: 0.88;
+}
+
+.btn-icone-acao:focus-visible {
+  outline: 2px solid var(--verde);
+  outline-offset: 2px;
+}
+
+.btn-icone-acao img {
+  display: block;
+  width: 32px;
+  height: 32px;
+}
+
 .btn-primary {
   --bs-btn-bg: var(--verde);
   --bs-btn-border-color: var(--verde);
@@ -111,6 +162,76 @@ h1, h2, h3, .font-display {
   --bs-btn-hover-border-color: var(--verde-escuro);
   --bs-btn-active-bg: var(--verde-escuro);
   --bs-btn-active-border-color: var(--verde-escuro);
+}
+
+.btn-acao-topo {
+  height: 40px;
+  padding: 0 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.filtro-mes-grupo {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  background: #ffffff;
+  border: 1.5px solid #dcd6c7;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(11, 59, 44, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.filtro-mes-grupo:focus-within {
+  border-color: var(--verde);
+  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.13);
+}
+
+.filtro-mes-rotulo {
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.7rem;
+  background: #faf8f3;
+  border-right: 1px solid #ece6d8;
+  color: var(--suave);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.filtro-mes-input {
+  height: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0 0.65rem;
+  color: var(--tinta);
+  font-size: 0.88rem;
+  font-weight: 500;
+  outline: none;
+}
+
+.filtro-mes-btn {
+  height: 100%;
+  border: 0;
+  border-left: 1px solid #ece6d8;
+  background: #faf8f3;
+  color: var(--tinta);
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 0 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.filtro-mes-btn:hover {
+  background: #eef5f0;
+  color: var(--verde-escuro);
 }
 
 .form-control,
@@ -221,6 +342,62 @@ h1, h2, h3, .font-display {
 
 .table-meubolso tbody tr:hover {
   background-color: #faf8f3;
+}
+
+/* Paginação */
+.paginacao-meubolso .paginacao-lista {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 0;
+}
+
+.paginacao-meubolso .page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.65rem;
+  border-radius: 10px !important;
+  border: 1.5px solid #e2dac8;
+  background-color: #ffffff;
+  color: var(--tinta);
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+
+.paginacao-meubolso .page-link:hover {
+  background-color: #f4faf6;
+  border-color: var(--verde);
+  color: var(--verde);
+  transform: translateY(-1px);
+}
+
+.paginacao-meubolso .page-link:focus-visible {
+  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.16);
+}
+
+.paginacao-meubolso .page-item.active .page-link {
+  background-color: var(--verde);
+  border-color: var(--verde);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(21, 128, 61, 0.22);
+}
+
+.paginacao-meubolso .page-item.active .page-link:hover {
+  transform: none;
+}
+
+.paginacao-meubolso .page-item.disabled .page-link {
+  background-color: #f8f6f0;
+  border-color: #ece6d8;
+  color: #a6afa9;
+  opacity: 0.75;
 }
 
 /* Modais */

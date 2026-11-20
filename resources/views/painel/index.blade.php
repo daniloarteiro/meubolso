@@ -2,17 +2,19 @@
 @section('titulo', 'Visão Geral')
 
 @section('conteudo')
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
-            <div class="d-flex align-items-center gap-2">
-                <h1 class="h3 mb-0 fw-bold">{{ $mesAtualLabel }}</h1>
-                <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3 py-1">Mês Atual</span>
-            </div>
-            <p class="text-muted small mb-0 mt-1">Resumo das suas finanças no mês corrente.</p>
+            <h1 class="h3 mb-0 fw-bold">{{ $mesAtualLabel }}</h1>
+            <p class="text-muted small mb-0 mt-1">
+                {{ $ehMesAtual ? 'Resumo das suas finanças no mês corrente.' : 'Resumo das suas finanças no mês selecionado.' }}
+            </p>
         </div>
-        <a href="{{ route('transacoes.index', ['novo' => 1]) }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Nova transação
-        </a>
+
+        <form method="GET" action="{{ route('painel.index') }}" class="filtro-mes-grupo">
+            <label class="filtro-mes-rotulo" for="mes_painel">Mês</label>
+            <input type="month" class="filtro-mes-input" id="mes_painel" name="mes" value="{{ $mes }}" aria-label="Mês de referência">
+            <button type="submit" class="filtro-mes-btn">Ver</button>
+        </form>
     </div>
 
     <div class="row g-3 mb-4">
@@ -69,7 +71,7 @@
     <div class="card p-3 p-lg-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="h6 fw-bold mb-0">Últimas transações</h2>
-            <a href="{{ route('transacoes.index') }}" class="small fw-semibold text-decoration-none">
+            <a href="{{ route('transacoes.index', ['mes' => $mes]) }}" class="small fw-semibold text-decoration-none">
                 Ver todas <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
             </a>
         </div>
@@ -101,8 +103,8 @@
                     @empty
                         <tr>
                             <td colspan="4" class="text-center text-muted py-4">
-                                Nenhuma transação cadastrada ainda.
-                                <a href="{{ route('transacoes.index', ['novo' => 1]) }}" class="fw-semibold text-decoration-none ms-1">Adicionar a primeira</a>
+                                {{ $ehMesAtual ? 'Nenhuma transação cadastrada ainda.' : 'Nenhuma transação cadastrada neste mês.' }}
+                                <a href="{{ route('transacoes.index', ['novo' => 1]) }}" class="fw-semibold text-decoration-none ms-1">Adicionar {{ $ehMesAtual ? 'a primeira' : 'transação' }}</a>
                             </td>
                         </tr>
                     @endforelse

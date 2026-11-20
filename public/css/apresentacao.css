@@ -17,6 +17,8 @@
 html {
   scroll-padding-top: env(safe-area-inset-top, 0px);
   scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 body {
@@ -25,6 +27,13 @@ body {
   color: var(--i);
   font-family: 'DM Sans', system-ui, sans-serif;
   overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
 }
 
 h1, h2, h3 {
@@ -43,9 +52,9 @@ img, svg {
 }
 
 .w {
-  max-width: 1560px;
+  max-width: 1880px;
   margin: 0 auto;
-  padding: 0 clamp(20px, 4vw, 56px);
+  padding: 0 clamp(16px, 2.5vw, 40px);
 }
 
 .top {

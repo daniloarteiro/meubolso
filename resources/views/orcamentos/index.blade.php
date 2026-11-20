@@ -2,20 +2,18 @@
 @section('titulo', 'Orçamentos & Metas')
 
 @section('conteudo')
-    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <h1 class="h3 mb-0 fw-bold">Orçamentos do mês</h1>
             <p class="text-muted small mb-0 mt-1">Defina limites por categoria de despesa e acompanhe os alertas.</p>
         </div>
-        <div class="d-flex flex-wrap gap-2 align-items-end">
-            <form method="GET" action="{{ route('orcamentos.index') }}" class="d-flex gap-2 align-items-end">
-                <div>
-                    <label class="form-label small fw-semibold text-muted mb-1" for="mes">Mês de referência</label>
-                    <input type="month" class="form-control form-control-sm" id="mes" name="mes" value="{{ $mes }}">
-                </div>
-                <button type="submit" class="btn btn-outline-secondary btn-sm px-3">Ver</button>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <form method="GET" action="{{ route('orcamentos.index') }}" class="filtro-mes-grupo">
+                <label class="filtro-mes-rotulo" for="mes">Mês</label>
+                <input type="month" class="filtro-mes-input" id="mes" name="mes" value="{{ $mes }}" aria-label="Mês de referência">
+                <button type="submit" class="filtro-mes-btn">Ver</button>
             </form>
-            <button class="btn btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#modalMeta" id="btnNovoOrcamento">
+            <button class="btn btn-primary btn-acao-topo" data-bs-toggle="modal" data-bs-target="#modalMeta" id="btnNovoOrcamento">
                 <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Novo orçamento
             </button>
         </div>
@@ -106,23 +104,40 @@
                             <small class="text-muted">Nenhuma meta definida para este mês.</small>
                         @endif
 
-                        <div class="d-flex align-items-center gap-2">
-                            <button
-                                type="button"
-                                class="btn btn-outline-secondary btn-sm py-1 px-2 btn-definir-meta"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modalMeta"
-                                data-categoria="{{ $c['id'] }}"
-                                data-limite="{{ $c['limite'] ?? '' }}"
-                            >
-                                {{ $c['limite'] ? 'Editar' : 'Definir meta' }}
-                            </button>
+                        <div class="d-flex align-items-center gap-1">
+                            @if ($c['limite'])
+                                <button
+                                    type="button"
+                                    class="btn-icone-acao btn-definir-meta"
+                                    title="Editar meta"
+                                    aria-label="Editar meta"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalMeta"
+                                    data-categoria="{{ $c['id'] }}"
+                                    data-limite="{{ $c['limite'] }}"
+                                >
+                                    <img src="{{ asset('images/botao-editar.svg') }}" alt="" width="32" height="32" aria-hidden="true">
+                                </button>
+                            @else
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-secondary btn-sm py-1 px-2 btn-definir-meta"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalMeta"
+                                    data-categoria="{{ $c['id'] }}"
+                                    data-limite=""
+                                >
+                                    Definir meta
+                                </button>
+                            @endif
 
                             @if ($c['orcamento_id'])
-                                <form method="POST" action="{{ route('orcamentos.destroy', $c['orcamento_id']) }}" onsubmit="return confirm('Remover meta desta categoria?')">
+                                <form method="POST" action="{{ route('orcamentos.destroy', $c['orcamento_id']) }}" class="d-inline-flex m-0" onsubmit="return confirm('Remover meta desta categoria?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-link btn-sm text-danger p-0 text-decoration-none">Remover</button>
+                                    <button type="submit" class="btn-icone-acao" title="Remover meta" aria-label="Remover meta">
+                                        <img src="{{ asset('images/botao-excluir.svg') }}" alt="" width="32" height="32" aria-hidden="true">
+                                    </button>
                                 </form>
                             @endif
                         </div>

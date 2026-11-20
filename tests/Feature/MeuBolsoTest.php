@@ -480,4 +480,103 @@ class MeuBolsoTest extends TestCase
             ->assertSee('Alterar senha')
             ->assertSee('Excluir conta');
     }
+
+    public function test_transacoes_pagina_ate_10_itens_por_pagina_e_preserva_filtros(): void
+    {
+        $user = User::factory()->create();
+        Categoria::criarPadraoPara($user);
+        $cat = $user->categorias()->where('nome', 'Alimentação')->first();
+
+        for ($i = 1; $i <= 15; $i++) {
+            Transacao::create([
+                'user_id' => $user->id,
+                'categoria_id' => $cat->id,
+                'descricao' => sprintf('Compra %02d', $i),
+                'valor' => 10 + $i,
+                'data' => sprintf('2026-10-%02d', $i),
+            ]);
+        }
+
+        // Página 1 mostra os 10 mais recentes (Compra 15 até Compra 06)
+        $this->actingAs($user)
+            ->get(route('transacoes.index'))
+            ->assertOk()
+            ->assertSee('15 registros')
+            ->assertSee('Mostrando 1 a 10 de 15 registros')
+            ->assertSee('Compra 15')
+            ->assertSee('Compra 06')
+            ->assertDontSee('Compra 05');
+
+        // Página 2 mostra os 5 restantes (Compra 05 até Compra 01)
+        $this->actingAs($user)
+            ->get(route('transacoes.index', ['page' => 2]))
+            ->assertOk()
+            ->assertSee('Mostrando 11 a 15 de 15 registros')
+            ->assertSee('Compra 05')
+            ->assertSee('Compra 01')
+            ->assertDontSee('Compra 06');
+
+        // Filtro por mês + tipo preserva parâmetros nos links de paginação
+        $this->actingAs($user)
+            ->get(route('transacoes.index', ['mes' => '2026-10', 'tipo' => 'despesa']))
+            ->assertOk()
+            ->assertSee('mes=2026-10')
+            ->assertSee('tipo=despesa');
+    }
+
+    public function test_selecao_de_mes_funciona_no_painel_e_em_transacoes(): void
+    {
+        $user = User::factory()->create();
+        Categoria::criarPadraoPara($user);
+        $catAlimentacao = $user->categorias()->where('nome', 'Alimentação')->first();
+        $catSalario = $user->categorias()->where('nome', 'Salário')->first();
+
+        // Outubro de 2026
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catSalario->id,
+            'descricao' => 'Salário Outubro',
+            'valor' => 2000,
+            'data' => '2026-10-05',
+        ]);
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catAlimentacao->id,
+            'descricao' => 'Mercado Outubro',
+            'valor' => 350,
+            'data' => '2026-10-12',
+        ]);
+
+        // Novembro de 2026
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catAlimentacao->id,
+            'descricao' => 'Jantar Novembro',
+            'valor' => 120,
+            'data' => '2026-11-10',
+        ]);
+
+        // Painel filtrando Outubro de 2026
+        $this->actingAs($user)
+            ->get(route('painel.index', ['mes' => '2026-10']))
+            ->assertOk()
+            ->assertSee('Outubro de 2026')
+            ->assertSee('Salário Outubro')
+            ->assertSee('Mercado Outubro')
+            ->assertDontSee('Jantar Novembro');
+
+        // Mês inválido no painel cai com segurança no mês atual
+        $this->actingAs($user)
+            ->get(route('painel.index', ['mes' => 'invalido']))
+            ->assertOk();
+
+        // Transações filtrando Outubro de 2026 via ?mes=
+        $this->actingAs($user)
+            ->get(route('transacoes.index', ['mes' => '2026-10']))
+            ->assertOk()
+            ->assertSee('2 registros')
+            ->assertSee('Salário Outubro')
+            ->assertSee('Mercado Outubro')
+            ->assertDontSee('Jantar Novembro');
+    }
 }

@@ -29,7 +29,7 @@ class ConsultasSqlTest extends TestCase
         $mesAnterior = now()->subMonthNoOverflow()->startOfMonth()->addDays(4)->format('Y-m-d');
         $doisMesesAtras = now()->subMonthsNoOverflow(2)->startOfMonth()->addDays(2)->format('Y-m-d');
 
-        // 6 transações do usuário para comprovar LIMIT 5 e ordenação data DESC, id DESC
+        // Transações em meses anteriores + 6 no mês atual para comprovar filtro do mês, LIMIT 5 e ordenação data DESC, id DESC
         Transacao::create([
             'user_id' => $user->id,
             'categoria_id' => $catSalario->id,
@@ -57,8 +57,24 @@ class ConsultasSqlTest extends TestCase
         Transacao::create([
             'user_id' => $user->id,
             'categoria_id' => $catAlimentacao->id,
+            'descricao' => 'Bala',
+            'valor' => 10.00,
+            'data' => $hoje,
+        ]);
+
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catAlimentacao->id,
+            'descricao' => 'Padaria',
+            'valor' => 10.50,
+            'data' => $hoje,
+        ]);
+
+        Transacao::create([
+            'user_id' => $user->id,
+            'categoria_id' => $catAlimentacao->id,
             'descricao' => 'Café da manhã',
-            'valor' => 50.50,
+            'valor' => 30.00,
             'data' => $hoje,
         ]);
 
@@ -94,6 +110,7 @@ class ConsultasSqlTest extends TestCase
             ->assertViewHas('saldo', 1649.5)
             ->assertSee('Supermercado')
             ->assertDontSee('Sexta mais antiga')
+            ->assertDontSee('Salário anterior')
             ->assertDontSee('Receita alheia');
 
         $ultimas = $res->viewData('transacoes');
@@ -101,8 +118,8 @@ class ConsultasSqlTest extends TestCase
         $this->assertSame($ultima->id, $ultimas[0]->id);
         $this->assertSame('Almoço', $ultimas[1]->descricao);
         $this->assertSame('Café da manhã', $ultimas[2]->descricao);
-        $this->assertSame('Salário atual', $ultimas[3]->descricao);
-        $this->assertSame('Salário anterior', $ultimas[4]->descricao);
+        $this->assertSame('Padaria', $ultimas[3]->descricao);
+        $this->assertSame('Bala', $ultimas[4]->descricao);
 
         $cats = collect($res->viewData('categorias'))->keyBy('nome');
         $this->assertSame(350.5, $cats->get('Alimentação')['gasto']);
