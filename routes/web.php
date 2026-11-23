@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AjudaController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\OrcamentoController;
 use App\Http\Controllers\PainelController;
@@ -10,6 +11,9 @@ use Illuminate\Support\Facades\Route;
 
 // Página inicial de apresentação (landing page)
 Route::view('/', 'apresentacao')->name('apresentacao');
+
+// Central de ajuda e perguntas frequentes (pública e autenticada)
+Route::get('/ajuda', [AjudaController::class, 'index'])->name('ajuda.index');
 
 // Alias em português para a tela de cadastro do Breeze
 Route::get('/cadastro', [RegisteredUserController::class, 'create'])

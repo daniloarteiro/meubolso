@@ -132,7 +132,14 @@
                             @endif
 
                             @if ($c['orcamento_id'])
-                                <form method="POST" action="{{ route('orcamentos.destroy', $c['orcamento_id']) }}" class="d-inline-flex m-0" onsubmit="return confirm('Remover meta desta categoria?')">
+                                <form
+                                    method="POST"
+                                    action="{{ route('orcamentos.destroy', $c['orcamento_id']) }}"
+                                    class="d-inline-flex m-0"
+                                    data-confirm-titulo="Remover meta?"
+                                    data-confirm-mensagem="A meta de {{ $c['nome'] }} será removida deste mês, mas suas transações continuarão salvas."
+                                    data-confirm-botao="Remover meta"
+                                >
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn-icone-acao" title="Remover meta" aria-label="Remover meta">

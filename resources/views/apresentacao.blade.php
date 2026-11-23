@@ -151,5 +151,6 @@
             <a href="{{ route('login') }}" class="b b2" style="font-size:18px;padding:16px 32px">Entrar no MeuBolso →</a>
         </section>
     </div>
+    @include('components.botao-ajuda')
 </body>
 </html>

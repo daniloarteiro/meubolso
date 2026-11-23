@@ -110,7 +110,14 @@
                                         <img src="{{ asset('images/botao-editar.svg') }}" alt="" width="32" height="32" aria-hidden="true">
                                     </button>
 
-                                    <form method="POST" action="{{ route('transacoes.destroy', $l->id) }}" class="d-inline-flex m-0" onsubmit="return confirm('Deseja excluir esta transação?')">
+                                    <form
+                                        method="POST"
+                                        action="{{ route('transacoes.destroy', $l->id) }}"
+                                        class="d-inline-flex m-0"
+                                        data-confirm-titulo="Excluir transação?"
+                                        data-confirm-mensagem="Deseja excluir &quot;{{ $l->descricao }}&quot;? Esta ação não pode ser desfeita."
+                                        data-confirm-botao="Excluir transação"
+                                    >
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn-icone-acao" title="Excluir transação" aria-label="Excluir transação">

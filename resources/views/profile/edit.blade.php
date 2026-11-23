@@ -121,7 +121,14 @@
             <div class="card card-perigo p-3 p-lg-4">
                 <h2 class="h6 fw-bold text-danger mb-1">Excluir conta</h2>
                 <p class="text-muted small mb-3">Ao excluir sua conta, todos os seus lançamentos e metas serão apagados permanentemente.</p>
-                <form method="POST" action="{{ route('profile.destroy') }}" class="row g-2 align-items-end" onsubmit="return confirm('Tem certeza que deseja excluir sua conta?')">
+                <form
+                    method="POST"
+                    action="{{ route('profile.destroy') }}"
+                    class="row g-2 align-items-end"
+                    data-confirm-titulo="Excluir conta permanentemente?"
+                    data-confirm-mensagem="Todos os seus lançamentos, categorias e metas serão apagados e não poderão ser recuperados."
+                    data-confirm-botao="Excluir conta"
+                >
                     @csrf
                     @method('DELETE')
                     <div class="col-sm-4">

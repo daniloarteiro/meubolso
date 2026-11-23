@@ -606,4 +606,90 @@ class MeuBolsoTest extends TestCase
                 && $request['subject'] === 'Teste Brevo';
         });
     }
+
+    public function test_pagina_ajuda_e_botao_flutuante_funcionam_para_visitante_e_autenticado(): void
+    {
+        // Telas públicas exibem o botão flutuante de ajuda
+        $this->get(route('apresentacao'))
+            ->assertOk()
+            ->assertSee('btn-ajuda-flutuante')
+            ->assertSee(route('ajuda.index'));
+
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSee('btn-ajuda-flutuante')
+            ->assertSee(route('ajuda.index'));
+
+        $this->get(route('cadastro'))
+            ->assertOk()
+            ->assertSee('btn-ajuda-flutuante')
+            ->assertSee(route('ajuda.index'));
+
+        // Visitante acessa /ajuda com layout público e sem o botão flutuante duplicado
+        $this->get(route('ajuda.index'))
+            ->assertOk()
+            ->assertSee('Ajuda e Perguntas Frequentes')
+            ->assertSee('Primeiros passos')
+            ->assertSee('Orçamentos e Alertas')
+            ->assertSee('Criar conta')
+            ->assertDontSee('btn-ajuda-flutuante');
+
+        // Usuário autenticado vê o botão flutuante no painel e acessa /ajuda com a navbar do sistema
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('painel.index'))
+            ->assertOk()
+            ->assertSee('btn-ajuda-flutuante')
+            ->assertSee(route('ajuda.index'));
+
+        $this->actingAs($user)
+            ->get(route('ajuda.index'))
+            ->assertOk()
+            ->assertSee('Ajuda e Perguntas Frequentes')
+            ->assertSee('Visão Geral')
+            ->assertDontSee('btn-ajuda-flutuante');
+    }
+
+    public function test_exclusoes_usam_modal_de_confirmacao_sem_alert_nativo(): void
+    {
+        $user = User::factory()->create();
+        Categoria::criarPadraoPara($user);
+        $categoria = $user->categorias()->where('tipo', 'despesa')->first();
+
+        $user->transacoes()->create([
+            'categoria_id' => $categoria->id,
+            'descricao' => 'Compra teste modal',
+            'valor' => 45.00,
+            'data' => now()->toDateString(),
+        ]);
+
+        Orcamento::create([
+            'user_id' => $user->id,
+            'categoria_id' => $categoria->id,
+            'mes_referencia' => now()->format('Y-m'),
+            'limite' => 300.00,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('transacoes.index'))
+            ->assertOk()
+            ->assertSee('id="modalConfirmacao"', false)
+            ->assertSee('data-confirm-mensagem=', false)
+            ->assertDontSee('return confirm(', false);
+
+        $this->actingAs($user)
+            ->get(route('orcamentos.index'))
+            ->assertOk()
+            ->assertSee('id="modalConfirmacao"', false)
+            ->assertSee('data-confirm-mensagem=', false)
+            ->assertDontSee('return confirm(', false);
+
+        $this->actingAs($user)
+            ->get(route('profile.edit'))
+            ->assertOk()
+            ->assertSee('id="modalConfirmacao"', false)
+            ->assertSee('data-confirm-mensagem=', false)
+            ->assertDontSee('return confirm(', false);
+    }
 }

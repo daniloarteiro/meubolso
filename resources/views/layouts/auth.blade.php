@@ -59,6 +59,8 @@
         </section>
     </main>
 
+    @include('components.botao-ajuda')
+
     @stack('scripts')
 </body>
 </html>
